@@ -1,4 +1,4 @@
-﻿﻿using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Numerics;
 using SkiaSharp;
@@ -11,6 +11,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Renci.SshNet;
 using eft_dma_radar.Properties;
+using System.Net.Sockets;
+using System.Net;
+
+using System.Windows.Forms;
 
 namespace eft_dma_radar
 {
@@ -182,7 +186,7 @@ namespace eft_dma_radar
             _aiFactions = Program.AIFactionManager;
 
             InitializeComponent();
-
+            GetLocalIPv4();
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.EnforceBackcolorOnAllComponents = true;
@@ -674,7 +678,22 @@ namespace eft_dma_radar
         }
         #endregion
         #region WebRadar
-private void swStartWebServer_CheckedChanged(object sender, EventArgs e)
+
+        private void GetLocalIPv4()
+        {
+            string localIP = string.Empty;
+            var hostEntry = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var address in hostEntry.AddressList)
+            {
+                if (address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    localIP = address.ToString();
+                    break;
+                }
+            }
+            hostnameTextBox.Text = localIP;
+        }
+        private void swStartWebServer_CheckedChanged(object sender, EventArgs e)
 {
     Program.Log($"Switch CheckedChanged event fired. Checked: {swStartWebServer.Checked}");
     if (swStartWebServer.Checked)
