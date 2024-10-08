@@ -199,10 +199,11 @@
             position: absolute;
             bottom: 20px;
             right: 20px;
-            width: 200px;
+            /*width: 200px;*/
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 15px;
+            padding-left: 15px;
+            padding-right: 15px;
             border-radius: 10px;
             font-size: 14px;
             z-index: 200;
@@ -212,470 +213,514 @@
 </head>
 
 <body>
-    <div id="mapContainer">
-        <canvas id="radarCanvas"></canvas>
-        <div id="playerInfo"></div>
-        <button id="toggleSidebar">☰</button>
-        <div id="sidebar">
-            <button id="Player" class="tabButton active">Player</button>
-            <button id="Loot" class="tabButton">Loot</button>
-            <button id="Misc" class="tabButton">Misc</button>
+<div id="mapContainer">
+    <canvas id="radarCanvas"></canvas>
+    <div id="playerInfo"></div>
+    <button id="toggleSidebar">☰</button>
+    <div id="sidebar">
+        <button id="Player" class="tabButton active">Player</button>
+        <button id="Loot" class="tabButton">Loot</button>
+        <button id="Misc" class="tabButton">Misc</button>
 
-            <div id="PlayerContent" class="tabContent active">
-                <h2>Player Settings</h2>
-                <label><input type="checkbox" id="showPlayers" checked> Show Players</label><br>
-                <label><input type="checkbox" id="showScavs" checked> Show Scavs</label><br>
-                <label><input type="checkbox" id="showBosses" checked> Show Bosses</label><br>
-                <label><input type="checkbox" id="showTeammates" checked> Show Teammates</label><br>
-                <label><input type="checkbox" id="showDeadBodies" checked> Show Dead Bodies</label><br>
-                <label>Selected Player:</label>
-                <select id="playerSelect"></select>
-            </div>
+        <div id="PlayerContent" class="tabContent active">
+            <h2>Player Settings</h2>
+            <label><input type="checkbox" id="showPlayers" checked> Show Players</label><br>
+            <label><input type="checkbox" id="showScavPlayers" checked> Show Scav Players</label><br>
+            <label><input type="checkbox" id="showScavs" checked> Show Scavs</label><br>
+            <label><input type="checkbox" id="showBosses" checked> Show Bosses</label><br>
+            <label><input type="checkbox" id="showTeammates" checked> Show Teammates</label><br>
+            <label><input type="checkbox" id="showDeadBodies" checked> Show Dead Bodies</label><br>
+            <label><input type="checkbox" id="showPlayerName" checked> Show Player Name</label><br>
+            <label><input type="checkbox" id="showPlayerHeight" checked> Show Player Height</label><br>
+            <label><input type="checkbox" id="showPlayerDistance" checked> Show Player Distance</label><br>
+            <label>Selected Player:</label>
+            <select id="playerSelect"></select>
+        </div>
 
-            <div id="LootContent" class="tabContent">
-                <h2>Loot Settings</h2>
-                <label>Search Loot:</label>
-                <input type="text" id="lootSearch" placeholder="Search for loot..."><br>
-                <label>Minimum Loot Value:</label>
-                <input type="range" id="minLootValue" min="0" max="600000" step="1000" value="0">
-                <span id="minLootValueDisplay">0</span><br>
-                <label>Minimum Important Loot Price:</label>
-                <input type="number" id="importantLootPrice" value="60000"><br>
-                <label><input type="checkbox" id="showLoot" checked> Show Loot</label><br>
+        <div id="LootContent" class="tabContent">
+            <h2>Loot Settings</h2>
+            <label>Search Loot:</label>
+            <input type="text" id="lootSearch" placeholder="Search for loot..."><br>
+            <label>Minimum Loot Value:</label>
+            <input type="range" id="minLootValue" min="1000" max="600000" step="1000">
+            <span id="minLootValueDisplay">0</span><br>
+            <label>Minimum Important Loot Price:</label>
+            <input type="number" id="importantLootPrice" value="60000"><br>
+            <label><input type="checkbox" id="showLoot"> Show Loot</label><br>
 
-                <h3>Containers</h3>
-                <label><input type="checkbox" id="showContainers" checked> Show Containers</label><br>
-            </div>
+            <h3>Containers</h3>
+            <label><input type="checkbox" id="showContainers"> Show Containers</label><br>
+        </div>
 
-            <div id="MiscContent" class="tabContent">
-                <h2>Misc Settings</h2>
-                <label><input type="checkbox" id="showExfils" checked> Show Exfils</label><br>
-                <label><input type="checkbox" id="showMostValuableLoot"> Show Most Valuable Loot</label><br>
-                <label><input type="checkbox" id="showPlayerStats"> Show Player Stats</label>
-            </div>
+        <div id="MiscContent" class="tabContent">
+            <h2>Misc Settings</h2>
+            <label><input type="checkbox" id="showExfils" checked> Show Exfils</label><br>
+            <label><input type="checkbox" id="showMostValuableLoot"> Show Most Valuable Loot</label><br>
+            <label><input type="checkbox" id="showPlayerStats"> Show Player Stats</label>
         </div>
     </div>
+</div>
 
-    <div id="containerSettingsModal">
-        <div id="containerSettingsContent">
-            <h2>Select Containers to Display</h2>
-            <div class="containerGrid">
-                <label><input type="checkbox" id="containerBankCashRegister" checked> Bank Cash Register</label>
-                <label><input type="checkbox" id="containerBankSafe" checked> Bank Safe</label>
-                <label><input type="checkbox" id="containerBuriedBarrelCache" checked> Buried Barrel Cache</label>
-                <label><input type="checkbox" id="containerCashRegister" checked> Cash Register</label>
-                <label><input type="checkbox" id="containerCivilianBody" checked> Civilian Body</label>
-                <label><input type="checkbox" id="containerDeadScav" checked> Dead Scav</label>
-                <label><input type="checkbox" id="containerDrawer" checked> Drawer</label>
-                <label><input type="checkbox" id="containerDuffleBag" checked> Duffle Bag</label>
-                <label><input type="checkbox" id="containerGrenadeBox" checked> Grenade Box</label>
-                <label><input type="checkbox" id="containerGroundCache" checked> Ground Cache</label>
-                <label><input type="checkbox" id="containerJacket" checked> Jacket</label>
-                <label><input type="checkbox" id="containerLabTechnicianBody" checked> Lab Technician Body</label>
-                <label><input type="checkbox" id="containerMedbagSMU06" checked> Medbag SMU06</label>
-                <label><input type="checkbox" id="containerMedicalSupplyCrate" checked> Medical Supply Crate</label>
-                <label><input type="checkbox" id="containerPCBlock" checked> PC Block</label>
-                <label><input type="checkbox" id="containerPMCBody" checked> PMC Body</label>
-                <label><input type="checkbox" id="containerRationSupplyCrate" checked> Ration Supply Crate</label>
-                <label><input type="checkbox" id="containerSafe" checked> Safe</label>
-                <label><input type="checkbox" id="containerScavBody" checked> Scav Body</label>
-                <label><input type="checkbox" id="containerShturmansStash" checked> Shturman's Stash</label>
-                <label><input type="checkbox" id="containerTechnicalSupplyCrate" checked> Technical Supply Crate</label>
-                <label><input type="checkbox" id="containerToolbox" checked> Toolbox</label>
-                <label><input type="checkbox" id="containerWeaponBox" checked> Weapon Box</label>
-                <label><input type="checkbox" id="containerWoodenAmmoBox" checked> Wooden Ammo Box</label>
-                <label><input type="checkbox" id="containerWoodenCrate" checked> Wooden Crate</label>
-            </div>
-            <button id="closeModal">Close</button>
+<div id="containerSettingsModal">
+    <div id="containerSettingsContent">
+        <h2>Select Containers to Display</h2>
+        <div class="containerGrid">
+            <label><input type="checkbox" id="containerBankCashRegister" checked> Bank Cash Register</label>
+            <label><input type="checkbox" id="containerBankSafe" checked> Bank Safe</label>
+            <label><input type="checkbox" id="containerBuriedBarrelCache" checked> Buried Barrel Cache</label>
+            <label><input type="checkbox" id="containerCashRegister" checked> Cash Register</label>
+            <label><input type="checkbox" id="containerCivilianBody" checked> Civilian Body</label>
+            <label><input type="checkbox" id="containerDeadScav" checked> Dead Scav</label>
+            <label><input type="checkbox" id="containerDrawer" checked> Drawer</label>
+            <label><input type="checkbox" id="containerDuffleBag" checked> Duffle Bag</label>
+            <label><input type="checkbox" id="containerGrenadeBox" checked> Grenade Box</label>
+            <label><input type="checkbox" id="containerGroundCache" checked> Ground Cache</label>
+            <label><input type="checkbox" id="containerJacket" checked> Jacket</label>
+            <label><input type="checkbox" id="containerLabTechnicianBody" checked> Lab Technician Body</label>
+            <label><input type="checkbox" id="containerMedbagSMU06" checked> Medbag SMU06</label>
+            <label><input type="checkbox" id="containerMedicalSupplyCrate" checked> Medical Supply Crate</label>
+            <label><input type="checkbox" id="containerPCBlock" checked> PC Block</label>
+            <label><input type="checkbox" id="containerPMCBody" checked> PMC Body</label>
+            <label><input type="checkbox" id="containerRationSupplyCrate" checked> Ration Supply Crate</label>
+            <label><input type="checkbox" id="containerSafe" checked> Safe</label>
+            <label><input type="checkbox" id="containerScavBody" checked> Scav Body</label>
+            <label><input type="checkbox" id="containerShturmansStash" checked> Shturman's Stash</label>
+            <label><input type="checkbox" id="containerTechnicalSupplyCrate" checked> Technical Supply Crate</label>
+            <label><input type="checkbox" id="containerToolbox" checked> Toolbox</label>
+            <label><input type="checkbox" id="containerWeaponBox" checked> Weapon Box</label>
+            <label><input type="checkbox" id="containerWoodenAmmoBox" checked> Wooden Ammo Box</label>
+            <label><input type="checkbox" id="containerWoodenCrate" checked> Wooden Crate</label>
         </div>
+        <button id="closeModal">Close</button>
     </div>
+</div>
 
-    <div id="mostValuableLootPopup">
-        <h3>Most Valuable Loot</h3>
-        <table id="mostValuableLootTable">
-            <tbody id="mostValuableLootList"></tbody>
-        </table>
-    </div>
+<div id="mostValuableLootPopup">
+    <h3>Most Valuable Loot</h3>
+    <table id="mostValuableLootTable">
+        <tbody id="mostValuableLootList"></tbody>
+    </table>
+</div>
 
-    <div id="playerStatsPopup">
-        <h3>Player Stats</h3>
-        <p>PMC: <span id="pmcCount">0</span></p>
-        <p>Scavs: <span id="scavCount">0</span></p>
-        <p>Bosses: <span id="bossCount">0</span></p>
-    </div>
+<div id="playerStatsPopup">
+    <h3>Player Stats</h3>
+    <p>PMC: <span id="pmcCount">0</span></p>
+    <p>Player Scavs: <span id="scavPlayerCount">0</span></p>
+    <p>AI Scavs: <span id="scavCount">0</span></p>
+    <p>Rogue: <span id="rogueCount">0</span></p>
+    <p>Bosses: <span id="bossCount">0</span></p>
 
-    <script>
-        const canvas = document.getElementById('radarCanvas');
-        const ctx = canvas.getContext('2d');
-        const mapContainer = document.getElementById('mapContainer');
-        const playerInfo = document.getElementById('playerInfo');
-        const mostValuableLootPopup = document.getElementById('mostValuableLootPopup');
-        const playerStatsPopup = document.getElementById('playerStatsPopup');
-        const minLootValueDisplay = document.getElementById('minLootValueDisplay');
-        const minLootValueSlider = document.getElementById('minLootValue');
+</div>
 
-        let mapImage = new Image();
-        let mapData = null;
-        let aiFactions = null;
-        let exfils = [];
-        let loot = [];
-        let corpses = [];
-        let containers = [];
-        let zoom = .25;
-        let offsetX = 0;
-        let offsetY = 0;
-        let dragging = false;
-        let dragStartX, dragStartY;
-        let selectedPlayerId = null;
-        let mapCenter = { x: 2315, y: 1448 };
-        let scaleFactor = 6.2;
-        let currentMapName = null;
+<script>
+    const canvas = document.getElementById('radarCanvas');
+    const ctx = canvas.getContext('2d');
+    const mapContainer = document.getElementById('mapContainer');
+    const playerInfo = document.getElementById('playerInfo');
+    const mostValuableLootPopup = document.getElementById('mostValuableLootPopup');
+    const playerStatsPopup = document.getElementById('playerStatsPopup');
+    const minLootValueDisplay = document.getElementById('minLootValueDisplay');
+    const minLootValueSlider = document.getElementById('minLootValue');
 
-        const arrowUpImage = new Image();
-        const arrowDownImage = new Image();
-        const doubleUpImage = new Image();
+    let mapImage = new Image();
+    let mapData = null;
+    let aiFactions = null;
+    let exfils = [];
+    let loot = [];
+    let corpses = [];
+    let containers = [];
+    let zoom = .25;
+    let offsetX = 0;
+    let offsetY = 0;
+    let dragging = false;
+    let dragStartX, dragStartY;
+    let selectedPlayerId = null;
+    let mapCenter = {x: 2315, y: 1448};
+    let scaleFactor = 6.2;
+    let currentMapName = null;
 
-        arrowUpImage.src = 'https://i.ibb.co/2trx5Ht/ArrowUp.png';
-        arrowDownImage.src = 'https://i.ibb.co/2trx5Ht/ArrowUp.png';
-        doubleUpImage.src = 'https://i.ibb.co/p0w6bS1/DoubleUp.png';
+    const arrowUpImage = new Image();
+    const arrowDownImage = new Image();
+    const doubleUpImage = new Image();
 
-        arrowDownImage.onload = () => {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = arrowDownImage.width;
-            canvas.height = arrowDownImage.height;
-            context.translate(canvas.width / 2, canvas.height / 2);
-            context.rotate(Math.PI);
-            context.drawImage(arrowDownImage, -canvas.width / 2, -canvas.height / 2);
-        };
+    arrowUpImage.src = 'https://i.ibb.co/2trx5Ht/ArrowUp.png';
+    arrowDownImage.src = 'https://i.ibb.co/2trx5Ht/ArrowUp.png';
+    doubleUpImage.src = 'https://i.ibb.co/p0w6bS1/DoubleUp.png';
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            drawMap();
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        let initialPinchDistance = null;
-let lastZoom = zoom;
-let lastOffsetX = offsetX;
-let lastOffsetY = offsetY;
-let initialPinchMidpoint = null;
-
-// Event for starting dragging or pinch zoom on mobile
-canvas.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        dragging = true;
-        dragStartX = touch.clientX - offsetX;
-        dragStartY = touch.clientY - offsetY;
-        canvas.style.cursor = 'grabbing';
-    } else if (e.touches.length === 2) {
-        // Pinch-to-zoom
-        initialPinchDistance = getPinchDistance(e);
-        initialPinchMidpoint = getPinchMidpoint(e);
-        lastZoom = zoom;
-        lastOffsetX = offsetX;
-        lastOffsetY = offsetY;
-    }
-});
-
-// Event for touch move (dragging or zooming)
-canvas.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 1 && dragging) {
-        const touch = e.touches[0];
-        offsetX = touch.clientX - dragStartX;
-        offsetY = touch.clientY - dragStartY;
-        drawMap();
-    } else if (e.touches.length === 2 && initialPinchDistance) {
-        // Pinch-to-zoom
-        const newPinchDistance = getPinchDistance(e);
-        const zoomFactor = newPinchDistance / initialPinchDistance;
-        const newZoom = Math.min(Math.max(lastZoom * zoomFactor, 0.1), 10);
-
-        // Adjust offsetX and offsetY to keep the zoom focused on the midpoint between the two fingers
-        const scaleChange = newZoom / zoom;
-        zoom = newZoom;
-
-        offsetX = lastOffsetX - (initialPinchMidpoint.x - lastOffsetX) * (scaleChange - 1);
-        offsetY = lastOffsetY - (initialPinchMidpoint.y - lastOffsetY) * (scaleChange - 1);
-
-        drawMap();
-    }
-});
-
-// Helper function to calculate pinch distance between two fingers
-function getPinchDistance(e) {
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
-// Helper function to calculate the midpoint of the pinch (between two fingers)
-function getPinchMidpoint(e) {
-    const x = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-    const y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-    return { x, y };
-}
-
-// Stop dragging when touch ends
-canvas.addEventListener('touchend', () => {
-    dragging = false;
-    initialPinchDistance = null;
-    initialPinchMidpoint = null;
-    canvas.style.cursor = 'grab';
-});
-
-// Ensure the canvas resizes properly
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    drawMap();
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// Existing mouse drag and zoom code (already implemented for desktop)
-canvas.addEventListener('mousedown', (e) => {
-    dragging = true;
-    dragStartX = e.clientX - offsetX;
-    dragStartY = e.clientY - offsetY;
-    canvas.style.cursor = 'grabbing';
-});
-
-window.addEventListener('mouseup', () => {
-    dragging = false;
-    canvas.style.cursor = 'grab';
-});
-
-canvas.addEventListener('mousemove', (e) => {
-    if (dragging) {
-        offsetX = e.clientX - dragStartX;
-        offsetY = e.clientY - dragStartY;
-        drawMap();
-    } else {
-        handleMouseHover(e.clientX, e.clientY);
-    }
-});
-
-// Existing mouse zooming code
-canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const zoomFactor = 1.1;
-    const mouseX = (e.clientX - offsetX) / zoom;
-    const mouseY = (e.clientY - offsetY) / zoom;
-    const zoomDirection = e.deltaY < 0 ? 1 : -1;
-    const zoomAmount = Math.pow(zoomFactor, zoomDirection);
-
-    zoom = Math.min(Math.max(zoom * zoomAmount, 0.1), 10);
-    offsetX = e.clientX - mouseX * zoom;
-    offsetY = e.clientY - mouseY * zoom;
-    drawMap();
-});
-
-        minLootValueSlider.addEventListener('input', (e) => {
-            minLootValueDisplay.textContent = e.target.value;
-        });
-
-        async function loadMap() {
-    const mapNameLookup = {
-        "Customs": "Customs.json",
-        "Factory": "Factory.json",
-        "Ground Zero": "GroundZero.json",
-        "Interchange": "Interchange.json",
-        "Lighthouse": "Lighthouse.json",
-        "Reserve": "Reserve.json",
-        "Shoreline": "Shoreline.json",
-        "Streets of Tarkov": "Streets.json",
-        "The Lab": "Labs.json",
-        "Woods": "Woods.json"
+    arrowDownImage.onload = () => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = arrowDownImage.width;
+        canvas.height = arrowDownImage.height;
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.rotate(Math.PI);
+        context.drawImage(arrowDownImage, -canvas.width / 2, -canvas.height / 2);
     };
 
-    try {
-        const response = await fetch("/api/game/map");
-        const gameState = await response.json();
-        const mapName = gameState.mapName;
-
-        if (!mapName || !mapNameLookup[mapName]) {
-            console.error('No matching map name found in lookup or no map name provided.');
-            return;
-        }
-
-        // Get the corresponding JSON file name using the lookup object
-        const jsonFileName = mapNameLookup[mapName];
-        const mapResponse = await fetch(`/Maps/${jsonFileName}`);
-        mapData = await mapResponse.json();
-
-        if (!mapData || !mapData.mapLayers) {
-            console.error('Map data or map layers are not available.');
-            return;
-        }
-
-        // Set map center and scale factor
-        mapCenter = { x: mapData.x || 2315, y: mapData.y || 1448 };
-        scaleFactor = mapData.scale || 6.2;
-
-        currentMapName = mapName;
-
-        if (mapData.players && mapData.players.length > 0) {
-            updateMapLayer();
-        }
-    } catch (error) {
-        console.error('Error loading map data:', error);
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        drawMap();
     }
-}
 
-        function updateMapLayer() {
-            const playerSelect = document.getElementById('playerSelect');
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-            if (playerSelect.options.length === 0) {
-                console.error('No players available in the selection.');
+    let initialPinchDistance = null;
+    let lastZoom = zoom;
+    let lastOffsetX = offsetX;
+    let lastOffsetY = offsetY;
+    let initialPinchMidpoint = null;
+
+    // Event for starting dragging or pinch zoom on mobile
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            dragging = true;
+            dragStartX = touch.clientX - offsetX;
+            dragStartY = touch.clientY - offsetY;
+            canvas.style.cursor = 'grabbing';
+        } else if (e.touches.length === 2) {
+            // Pinch-to-zoom
+            initialPinchDistance = getPinchDistance(e);
+            initialPinchMidpoint = getPinchMidpoint(e);
+            lastZoom = zoom;
+            lastOffsetX = offsetX;
+            lastOffsetY = offsetY;
+        }
+    });
+
+    // Event for touch move (dragging or zooming)
+    canvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && dragging) {
+            const touch = e.touches[0];
+            offsetX = touch.clientX - dragStartX;
+            offsetY = touch.clientY - dragStartY;
+            drawMap();
+        } else if (e.touches.length === 2 && initialPinchDistance) {
+            // Pinch-to-zoom
+            const newPinchDistance = getPinchDistance(e);
+            const zoomFactor = newPinchDistance / initialPinchDistance;
+            const newZoom = Math.min(Math.max(lastZoom * zoomFactor, 0.1), 10);
+
+            // Adjust offsetX and offsetY to keep the zoom focused on the midpoint between the two fingers
+            const scaleChange = newZoom / zoom;
+            zoom = newZoom;
+
+            offsetX = lastOffsetX - (initialPinchMidpoint.x - lastOffsetX) * (scaleChange - 1);
+            offsetY = lastOffsetY - (initialPinchMidpoint.y - lastOffsetY) * (scaleChange - 1);
+
+            drawMap();
+        }
+    });
+
+    // Helper function to calculate pinch distance between two fingers
+    function getPinchDistance(e) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Helper function to calculate the midpoint of the pinch (between two fingers)
+    function getPinchMidpoint(e) {
+        const x = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        return {x, y};
+    }
+
+    // Stop dragging when touch ends
+    canvas.addEventListener('touchend', () => {
+        dragging = false;
+        initialPinchDistance = null;
+        initialPinchMidpoint = null;
+        canvas.style.cursor = 'grab';
+    });
+
+    // Ensure the canvas resizes properly
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        drawMap();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Existing mouse drag and zoom code (already implemented for desktop)
+    canvas.addEventListener('mousedown', (e) => {
+        dragging = true;
+        dragStartX = e.clientX - offsetX;
+        dragStartY = e.clientY - offsetY;
+        canvas.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mouseup', () => {
+        dragging = false;
+        canvas.style.cursor = 'grab';
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (dragging) {
+            offsetX = e.clientX - dragStartX;
+            offsetY = e.clientY - dragStartY;
+            drawMap();
+        } else {
+            handleMouseHover(e.clientX, e.clientY);
+        }
+    });
+
+    // Existing mouse zooming code
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = 1.1;
+        const mouseX = (e.clientX - offsetX) / zoom;
+        const mouseY = (e.clientY - offsetY) / zoom;
+        const zoomDirection = e.deltaY < 0 ? 1 : -1;
+        const zoomAmount = Math.pow(zoomFactor, zoomDirection);
+
+        zoom = Math.min(Math.max(zoom * zoomAmount, 0.1), 10);
+        offsetX = e.clientX - mouseX * zoom;
+        offsetY = e.clientY - mouseY * zoom;
+        drawMap();
+    });
+
+    minLootValueSlider.addEventListener('input', (e) => {
+        minLootValueDisplay.textContent = e.target.value;
+    });
+
+    async function loadMap() {
+        const mapNameLookup = {
+            "Customs": "Customs.json",
+            "Factory": "Factory.json",
+            "Ground Zero": "GroundZero.json",
+            "Interchange": "Interchange.json",
+            "Lighthouse": "Lighthouse.json",
+            "Reserve": "Reserve.json",
+            "Shoreline": "Shoreline.json",
+            "Streets of Tarkov": "Streets.json",
+            "The Lab": "Labs.json",
+            "Woods": "Woods.json"
+        };
+
+        try {
+            const response = await fetch("/api/game/map");
+            const gameState = await response.json();
+            const mapName = gameState.mapName;
+
+            if (!mapName || !mapNameLookup[mapName]) {
+                console.error('No matching map name found in lookup or no map name provided.');
                 return;
             }
 
-            const selectedPlayerOption = playerSelect.options[playerSelect.selectedIndex];
-
-            if (!selectedPlayerOption) {
-                console.error('Selected player not found.');
-                return;
-            }
-
-            const selectedPlayerHeight = parseFloat(selectedPlayerOption.getAttribute('data-height'));
-
-            if (isNaN(selectedPlayerHeight)) {
-                console.error('Selected player height is not a valid number.');
-                return;
-            }
+            // Get the corresponding JSON file name using the lookup object
+            const jsonFileName = mapNameLookup[mapName];
+            const mapResponse = await fetch(`/Maps/${jsonFileName}`);
+            mapData = await mapResponse.json();
 
             if (!mapData || !mapData.mapLayers) {
                 console.error('Map data or map layers are not available.');
                 return;
             }
 
-            const sortedLayers = mapData.mapLayers.sort((a, b) => b.minHeight - a.minHeight);
+            // Set map center and scale factor
+            mapCenter = {x: mapData.x || 2315, y: mapData.y || 1448};
+            scaleFactor = mapData.scale || 6.2;
 
-            const mapLayer = sortedLayers.find(layer => selectedPlayerHeight >= layer.minHeight) || sortedLayers[0];
+            currentMapName = mapName;
 
-            if (mapLayer) {
-                if (mapImage.src !== mapLayer.filename) {
-                    mapImage.src = mapLayer.filename;
-                    mapImage.onload = drawMap;
-                }
-            } else {
-                console.error('No map layer found for the given player height.');
+            if (mapData.players && mapData.players.length > 0) {
+                updateMapLayer();
             }
+        } catch (error) {
+            console.error('Error loading map data:', error);
+        }
+    }
+
+    function updateMapLayer() {
+        const playerSelect = document.getElementById('playerSelect');
+
+        if (playerSelect.options.length === 0) {
+            console.error('No players available in the selection.');
+            return;
         }
 
-        async function getAndLoadMap() {
-            try {
-                const response = await fetch("/api/game/state");
-                const gameState = await response.json();
-                const mapName = gameState.mapName;
-
-                if (mapName !== currentMapName) {
-                    await loadMap(mapName);
-                    currentMapName = mapName;
-                }
-            } catch (error) {
-                console.error('Error loading game state:', error);
-            }
+        const selectedPlayerOption = playerSelect.options[playerSelect.selectedIndex];
+        if (!selectedPlayerOption) {
+            console.error('Selected player not found.');
+            localStorage.setItem('selectedPlayerId', null)
+            return;
         }
 
-        async function loadAiFactions() {
-            try {
-                const response = await fetch('/Configuration/AiFactions.json');
-                aiFactions = await response.json();
-            } catch (error) {
-                console.error('Error loading AI factions:', error);
-            }
+        const selectedPlayerHeight = parseFloat(selectedPlayerOption.getAttribute('data-height'));
+
+        if (isNaN(selectedPlayerHeight)) {
+            console.error('Selected player height is not a valid number.');
+            return;
         }
 
-        async function loadExfils() {
+        if (!mapData || !mapData.mapLayers) {
+            console.error('Map data or map layers are not available.');
+            return;
+        }
+
+        const sortedLayers = mapData.mapLayers.sort((a, b) => b.minHeight - a.minHeight);
+
+        const mapLayer = sortedLayers.find(layer => selectedPlayerHeight >= layer.minHeight) || sortedLayers[0];
+
+        if (mapLayer) {
+            if (mapImage.src !== mapLayer.filename) {
+                mapImage.src = mapLayer.filename;
+                mapImage.onload = drawMap;
+            }
+        } else {
+            console.error('No map layer found for the given player height.');
+        }
+    }
+
+    async function getAndLoadMap() {
+        try {
+            const response = await fetch("/api/game/state");
+            const gameState = await response.json();
+            const mapName = gameState.mapName;
+
+            if (mapName !== currentMapName) {
+                await loadMap(mapName);
+                currentMapName = mapName;
+            }
+        } catch (error) {
+            console.error('Error loading game state:', error);
+        }
+    }
+
+    async function loadAiFactions() {
+        try {
+            const response = await fetch('/Configuration/AiFactions.json');
+            aiFactions = await response.json();
+        } catch (error) {
+            console.error('Error loading AI factions:', error);
+        }
+    }
+
+    async function loadExfils() {
+        try {
+            const response = await fetch("/api/game/exfils");
+            exfils = await response.json();
+            drawMap();
+        } catch (error) {
+            console.error('Error loading exfils:', error);
+        }
+    }
+
+    async function loadContainers() {
+        if (containers.length === 0) {
             try {
-                const response = await fetch("/api/game/exfils");
-                exfils = await response.json();
+                const response = await fetch("/api/game/loot/containers");
+                containers = await response.json();
                 drawMap();
             } catch (error) {
-                console.error('Error loading exfils:', error);
+                console.error('Error loading containers:', error);
             }
         }
+    }
 
-        async function loadContainers() {
-            if (containers.length === 0) {
-                try {
-                    const response = await fetch("/api/game/loot/containers");
-                    containers = await response.json();
-                    drawMap();
-                } catch (error) {
-                    console.error('Error loading containers:', error);
+    function drawMap() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(offsetX, offsetY);
+        ctx.scale(zoom, zoom);
+        ctx.drawImage(mapImage, 0, 0);
+        drawPlayers();
+        drawLoot();
+        drawExfils();
+        ctx.restore();
+    }
+
+    function drawPlayers() {
+        if (!mapData || !mapData.players) return;
+
+        const selectedPlayer = mapData.players.find(player => player.ProfileID === selectedPlayerId);
+        // console.log(selectedPlayer)
+        const showPlayers = document.getElementById('showPlayers').checked;
+        const showScavPlayers = document.getElementById('showScavPlayers').checked;
+        const showScavs = document.getElementById('showScavs').checked;
+        const showBosses = document.getElementById('showBosses').checked;
+        const showTeammates = document.getElementById('showTeammates').checked;
+        const showDeadBodies = document.getElementById('showDeadBodies').checked;
+        const showPlayerName = document.getElementById('showPlayerName').checked;
+        const showPlayerHeight = document.getElementById('showPlayerHeight').checked;
+        const showPlayerDistance = document.getElementById('showPlayerDistance').checked;
+
+        let pmcCount = 0;
+        let scavCount = 0;
+        let rogueCount = 0;
+        let scavPlayerCount = 0;
+        let bossCount = 0;
+
+        mapData.players.forEach(player => {
+            const isLocalPlayer = player.ProfileID === selectedPlayerId;
+            const isMe = player.Type === 1;
+            const isTeammate = player.Type === 2;
+            const isUser = player.Type === 11;
+            const isBear = player.Type === 10;
+            const isScavPlayer = player.Type === 8;
+            const isFollower = player.Type === 14 || player.Type === 15;
+            const isAlive = player.IsAlive;
+            const HasExfild = player.HasExfild;
+            let shouldDrawPlayer = false;
+            if (!HasExfild) {
+                let playerColor = '#F6F600FF';
+                if (isMe) {
+                    playerColor = '#72ffb0';
+                    shouldDrawPlayer = true;
                 }
-            }
-        }
-
-        function drawMap() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(offsetX, offsetY);
-            ctx.scale(zoom, zoom);
-            ctx.drawImage(mapImage, 0, 0);
-            drawPlayers();
-            drawLoot();
-            drawExfils();
-            ctx.restore();
-        }
-
-        function drawPlayers() {
-            if (!mapData || !mapData.players) return;
-
-            const selectedPlayer = mapData.players.find(player => player.ProfileID === selectedPlayerId);
-
-            const showPlayers = document.getElementById('showPlayers').checked;
-            const showScavs = document.getElementById('showScavs').checked;
-            const showBosses = document.getElementById('showBosses').checked;
-            const showTeammates = document.getElementById('showTeammates').checked;
-            const showDeadBodies = document.getElementById('showDeadBodies').checked;
-
-            let pmcCount = 0;
-            let scavCount = 0;
-            let bossCount = 0;
-
-            mapData.players.forEach(player => {
-                const isLocalPlayer = player.ProfileID === selectedPlayerId;
-                const isTeammate = player.Type === 'Teammate';
-                const isAlive = player.IsAlive;
-                let shouldDrawPlayer = false;
-                let playerColor = 'yellow';
-
-                if (isLocalPlayer || isTeammate) {
+                if (isLocalPlayer) {
+                    shouldDrawPlayer = true;
+                    playerColor = '#00FCFCFF'
+                } else if (isTeammate) {
                     if (showTeammates) {
                         shouldDrawPlayer = true;
-                        playerColor = 'green';
+                        playerColor = '#72ffb0';
                     }
                 } else if (player.IsPMC) {
                     if (showPlayers) {
                         shouldDrawPlayer = true;
-                        playerColor = 'blue';
+                        if (isBear) {
+                            playerColor = 'blue';
+                        }
+                        if (isUser) {
+                            playerColor = 'red';
+                        }
                     }
-                    pmcCount++;
+                    if (!isMe) {
+                        pmcCount++;
+                    }
+
                 } else if (isBoss(player.Name)) {
                     if (showBosses) {
                         shouldDrawPlayer = true;
-                        playerColor = 'red';
+                        playerColor = '#f0f';
                     }
                     bossCount++;
-                } else if (isFollowerOrGuard(player.Name)) {
+                } else if (isFollowerOrGuard(player.Name) || isFollower) {
                     if (showScavs) {
                         shouldDrawPlayer = true;
-                        playerColor = 'pink';
+                        playerColor = '#800080';
                     }
-                    scavCount++;
+                    rogueCount++;
                 } else {
                     if (showScavs) {
                         shouldDrawPlayer = true;
-                        playerColor = 'yellow';
+                        playerColor = '#F6F600FF';
+                        if (isScavPlayer && showScavPlayers) {
+                            playerColor = 'orange';
+                        }
                     }
-                    scavCount++;
+                    if (isScavPlayer) {
+                        scavPlayerCount++;
+                    } else {
+                        scavCount++;
+                    }
+
                 }
 
                 if (shouldDrawPlayer) {
@@ -683,10 +728,10 @@ canvas.addEventListener('wheel', (e) => {
                     if (coords) {
                         if (isAlive) {
                             ctx.beginPath();
-                            ctx.arc(coords.x, coords.y, 8 / zoom, 0, 2 * Math.PI);
-                            ctx.fillStyle = playerColor;
-                            ctx.fill();
-                            ctx.strokeStyle = 'white';
+                            ctx.arc(coords.x, coords.y, 6 / zoom, 0, 2 * Math.PI);
+                            // ctx.fillStyle = playerColor;
+                            // ctx.fill();
+                            ctx.strokeStyle = playerColor;
                             ctx.lineWidth = 2 / zoom;
                             ctx.stroke();
 
@@ -699,10 +744,10 @@ canvas.addEventListener('wheel', (e) => {
                                     lineEndX = selectedCoords.x;
                                     lineEndY = selectedCoords.y;
                                 } else {
-                                    drawNormalDirectionLine(player, coords);
+                                    drawNormalDirectionLine(player, coords, playerColor);
                                 }
                             } else {
-                                drawNormalDirectionLine(player, coords);
+                                drawNormalDirectionLine(player, coords, playerColor);
                             }
 
                             ctx.beginPath();
@@ -711,6 +756,38 @@ canvas.addEventListener('wheel', (e) => {
                             ctx.strokeStyle = 'white';
                             ctx.lineWidth = 2 / zoom;
                             ctx.stroke();
+
+                            if (showPlayerName) {
+                                if (isLocalPlayer || player.IsPMC || isBoss(player.Name) || isScavPlayer) {
+                                    ctx.font = `bold ${14 / zoom}px Arial`; // 设置字体和大小
+                                    ctx.fillStyle = playerColor; // 选择颜色
+                                    ctx.textAlign = 'center';
+                                    ctx.fillText(player.Name, coords.x, coords.y - 15 / zoom); // 在正上方绘制名字
+                                }
+                            }
+
+                            if (showPlayerHeight) {
+                                //if (isLocalPlayer || player.IsPMC || isBoss(player.Name) || isScavPlayer) {
+                                ctx.font = `bold ${12 / zoom}px Arial`; // 设置字体和大小
+                                ctx.fillStyle = playerColor; // 选择颜色
+                                ctx.textAlign = 'center';
+                                const roundedZ = Math.round(player.Position.Z - selectedPlayer.Position.Z); // 四舍五入 Z 坐标
+
+                                ctx.fillText(roundedZ, coords.x - 15 / zoom, coords.y); //
+                                //}
+                            }
+
+                            if (showPlayerDistance) {
+                                //if (player.IsPMC || isBoss(player.Name) || isScavPlayer) {
+                                ctx.font = `bold ${12 / zoom}px Arial`; // 设置字体和大小
+                                ctx.fillStyle = playerColor; // 选择颜色
+                                ctx.textAlign = 'center';
+                                const roundedZ = Math.round(calculateDistance(selectedPlayer.Position, player.Position)); // 四舍五入 Z 坐标
+                                ctx.fillText(roundedZ, coords.x, coords.y + 20 / zoom); //
+                                //}
+                            }
+
+
                         } else if (showDeadBodies) {
                             ctx.font = `${20 / zoom}px Arial`;
                             ctx.fillStyle = player.IsPMC || isBoss(player.Name) || isFollowerOrGuard(player.Name) ? 'black' : 'white';
@@ -721,624 +798,769 @@ canvas.addEventListener('wheel', (e) => {
                         console.log('Invalid player coordinates', player.Position);
                     }
                 }
-            });
-
-            // Update the player stats
-            document.getElementById('pmcCount').textContent = pmcCount;
-            document.getElementById('scavCount').textContent = scavCount;
-            document.getElementById('bossCount').textContent = bossCount;
-        }
-
-        function drawNormalDirectionLine(player, coords) {
-            const lineLength = 25 / zoom;
-            const yawRadians = (player.Rotation.Yaw * Math.PI) / 180;
-            const lineEndX = coords.x + Math.cos(yawRadians) * lineLength;
-            const lineEndY = coords.y + Math.sin(yawRadians) * lineLength;
-
-            ctx.beginPath();
-            ctx.moveTo(coords.x, coords.y);
-            ctx.lineTo(lineEndX, lineEndY);
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2 / zoom;
-            ctx.stroke();
-        }
-
-function isLookingAtPlayer(player, targetPlayer) {
-    if (!player || !targetPlayer) return false;
-
-    const playerCoords = convertPositionToMapCoords(player.Position);
-    const targetCoords = convertPositionToMapCoords(targetPlayer.Position);
-
-    const dx = targetCoords.x - playerCoords.x;
-    const dy = targetCoords.y - playerCoords.y;
-
-    const angleToTarget = Math.atan2(dy, dx) * (180 / Math.PI);
-    const playerYaw = (player.Rotation.Yaw + 360) % 360;
-
-    let angleDifference = angleToTarget - playerYaw;
-
-    // Normalize angle difference to the range of -180 to 180
-    if (angleDifference > 180) angleDifference -= 360;
-    if (angleDifference < -180) angleDifference += 360;
-
-    const threshold = 3; // Adjust this as needed
-    return Math.abs(angleDifference) <= threshold;
-}
-
-        function calculateDistance(pos1, pos2) {
-            const dx = pos2.X - pos1.X;
-            const dy = pos2.Y - pos1.Y;
-            const dz = pos2.Z - pos1.Z;
-            return Math.sqrt(dx * dx + dy * dy + dz * dz);
-        }
-
-        function drawLoot() {
-            const minLootValue = document.getElementById('minLootValue').value;
-            const importantLootPrice = document.getElementById('importantLootPrice').value;
-            const showLoot = document.getElementById('showLoot').checked;
-            const showContainers = document.getElementById('showContainers').checked;
-            const searchQuery = document.getElementById('lootSearch').value.toLowerCase();
-
-            if (!showLoot || !loot || loot.length === 0) return;
-
-            const localPlayer = mapData.players.find(player => player.IsLocalPlayer);
-            const localPlayerZ = localPlayer ? localPlayer.Position.Z : 0;
-
-            loot.forEach(item => {
-                const itemName = item.Name ? item.Name.toLowerCase() : '';
-                if (itemName.includes(searchQuery) && item.Value >= minLootValue) {
-                    const coords = convertPositionToMapCoords(item.Position);
-                    if (coords) {
-                        ctx.beginPath();
-                        ctx.arc(coords.x, coords.y, 5 / zoom, 0, 2 * Math.PI);
-                        ctx.fillStyle = 'green';
-                        ctx.fill();
-                        ctx.strokeStyle = 'white';
-                        ctx.lineWidth = 1 / zoom;
-                        ctx.stroke();
-
-                        if (item.Value >= importantLootPrice) {
-                            ctx.beginPath();
-                            ctx.arc(coords.x, coords.y, 7 / zoom, 0, 2 * Math.PI);
-                            ctx.strokeStyle = 'red';
-                            ctx.lineWidth = 2 / zoom;
-                            ctx.stroke();
-                        }
-                    }
-                }
-            });
-
-            if (showContainers && containers.length > 0) {
-                containers.forEach(container => {
-                    const containerType = container.name.replace(/\s+/g, '').toLowerCase();
-                    const checkbox = document.getElementById(`container${containerType.charAt(0).toUpperCase() + containerType.slice(1)}`);
-                    if (checkbox && checkbox.checked) {
-                        const containerItemsMatch = container.items.some(item => {
-                            const itemName = item.Name ? item.Name.toLowerCase() : '';
-                            return item.Value >= minLootValue && itemName.includes(searchQuery);
-                        }) || container.items.length === 0;
-
-                        if (containerItemsMatch) {
-                            const coords = convertExfilToMapCoords(container.position);
-                            if (coords) {
-                                const heightDifference = container.position.z - localPlayerZ;
-
-                                ctx.beginPath();
-                                if (heightDifference > 2.5) {
-                                    ctx.moveTo(coords.x, coords.y - 5 / zoom);
-                                    ctx.lineTo(coords.x - 5 / zoom, coords.y + 5 / zoom);
-                                    ctx.lineTo(coords.x + 5 / zoom, coords.y + 5 / zoom);
-                                    ctx.closePath();
-                                    ctx.fillStyle = 'yellow';
-                                } else if (heightDifference < -2.5) {
-                                    ctx.moveTo(coords.x, coords.y + 5 / zoom);
-                                    ctx.lineTo(coords.x - 5 / zoom, coords.y - 5 / zoom);
-                                    ctx.lineTo(coords.x + 5 / zoom, coords.y - 5 / zoom);
-                                    ctx.closePath();
-                                    ctx.fillStyle = 'yellow';
-                                } else {
-                                    ctx.arc(coords.x, coords.y, 5 / zoom, 0, 2 * Math.PI);
-                                    ctx.fillStyle = 'green';
-                                }
-                                ctx.fill();
-                                ctx.strokeStyle = 'white';
-                                ctx.lineWidth = 1 / zoom;
-                                ctx.stroke();
-
-                                if (container.items.some(item => item.Value >= importantLootPrice)) {
-                                    ctx.beginPath();
-                                    ctx.arc(coords.x, coords.y, 7 / zoom, 0, 2 * Math.PI);
-                                    ctx.strokeStyle = 'red';
-                                    ctx.lineWidth = 2 / zoom;
-                                    ctx.stroke();
-                                }
-
-                                ctx.font = `${12 / zoom}px Arial`;
-                                ctx.fillStyle = 'white';
-                                ctx.textAlign = 'center';
-                                ctx.fillText(container.name, coords.x, coords.y - 10 / zoom);
-                            }
-                        }
-                    }
-                });
             }
+        });
 
-            corpses.forEach(corpse => {
-                const corpseItemsMatch = corpse.Items.some(item => {
-                    const itemName = item.Name ? item.Name.toLowerCase() : '';
-                    return item.Value >= minLootValue && itemName.includes(searchQuery);
-                });
+        // Update the player stats
+        document.getElementById('pmcCount').textContent = pmcCount;
+        document.getElementById('scavCount').textContent = scavCount;
+        document.getElementById('bossCount').textContent = bossCount;
+        document.getElementById('scavPlayerCount').textContent = scavPlayerCount;
+        document.getElementById('rogueCount').textContent = rogueCount;
+    }
 
-                if (corpseItemsMatch) {
-                    const coords = convertPositionToMapCoords(corpse.Position);
-                    if (coords) {
-                        const heightDifference = corpse.Position.Z - localPlayerZ;
+    function drawNormalDirectionLine(player, coords, line_color) {
+        const lineLength = 25 / zoom;
+        const yawRadians = (player.Rotation.Yaw * Math.PI) / 180;
+        const lineEndX = coords.x + Math.cos(yawRadians) * lineLength;
+        const lineEndY = coords.y + Math.sin(yawRadians) * lineLength;
 
-                        ctx.beginPath();
-                        if (heightDifference > 2.5) {
-                            ctx.moveTo(coords.x, coords.y - 5 / zoom);
-                            ctx.lineTo(coords.x - 5 / zoom, coords.y + 5 / zoom);
-                            ctx.lineTo(coords.x + 5 / zoom, coords.y + 5 / zoom);
-                            ctx.closePath();
-                            ctx.fillStyle = 'yellow';
-                        } else if (heightDifference < -2.5) {
-                            ctx.moveTo(coords.x, coords.y + 5 / zoom);
-                            ctx.lineTo(coords.x - 5 / zoom, coords.y - 5 / zoom);
-                            ctx.lineTo(coords.x + 5 / zoom, coords.y - 5 / zoom);
-                            ctx.closePath();
-                            ctx.fillStyle = 'yellow';
-                        } else {
-                            ctx.arc(coords.x, coords.y, 5 / zoom, 0, 2 * Math.PI);
-                            ctx.fillStyle = 'green';
-                        }
-                        ctx.fill();
-                        ctx.strokeStyle = 'white';
-                        ctx.lineWidth = 1 / zoom;
-                        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(coords.x, coords.y);
+        ctx.lineTo(lineEndX, lineEndY);
+        ctx.strokeStyle = line_color;
+        ctx.lineWidth = 2 / zoom;
+        ctx.stroke();
+    }
 
-                        if (corpse.Items.some(item => item.Value >= importantLootPrice)) {
-                            ctx.beginPath();
-                            ctx.arc(coords.x, coords.y, 7 / zoom, 0, 2 * Math.PI);
-                            ctx.strokeStyle = 'red';
-                            ctx.lineWidth = 2 / zoom;
-                            ctx.stroke();
-                        }
+    function isLookingAtPlayer(player, targetPlayer) {
+        if (!player || !targetPlayer) return false;
 
-                        ctx.font = `${12 / zoom}px Arial`;
-                        ctx.fillStyle = 'white';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(corpse.Name, coords.x, coords.y + 25 / zoom);
-                    }
-                }
-            });
-        }
+        const playerCoords = convertPositionToMapCoords(player.Position);
+        const targetCoords = convertPositionToMapCoords(targetPlayer.Position);
 
-        function drawExfils() {
-            const showExfils = document.getElementById('showExfils').checked;
-            if (!showExfils || !exfils || exfils.length === 0) return;
+        const dx = targetCoords.x - playerCoords.x;
+        const dy = targetCoords.y - playerCoords.y;
 
-            exfils.forEach(exfil => {
-                const coords = convertExfilToMapCoords(exfil.position);
+        const angleToTarget = Math.atan2(dy, dx) * (180 / Math.PI);
+        const playerYaw = (player.Rotation.Yaw + 360) % 360;
+
+        let angleDifference = angleToTarget - playerYaw;
+
+        // Normalize angle difference to the range of -180 to 180
+        if (angleDifference > 180) angleDifference -= 360;
+        if (angleDifference < -180) angleDifference += 360;
+
+        const threshold = 3; // Adjust this as needed
+        return Math.abs(angleDifference) <= threshold;
+    }
+
+    function calculateDistance(pos1, pos2) {
+        const dx = pos2.X - pos1.X;
+        const dy = pos2.Y - pos1.Y;
+        const dz = pos2.Z - pos1.Z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    function drawLoot() {
+        const minLootValue = document.getElementById('minLootValue').value;
+        const importantLootPrice = document.getElementById('importantLootPrice').value;
+        const showLoot = document.getElementById('showLoot').checked;
+        const showContainers = document.getElementById('showContainers').checked;
+        const searchQuery = document.getElementById('lootSearch').value.toLowerCase();
+
+        if (!showLoot || !loot || loot.length === 0) return;
+
+        const localPlayer = mapData.players.find(player => player.IsLocalPlayer);
+        const localPlayerZ = localPlayer ? localPlayer.Position.Z : 0;
+
+        loot.forEach(item => {
+            const itemName = item.Name ? item.Name.toLowerCase() : '';
+            if (itemName.includes(searchQuery) && item.Value >= minLootValue) {
+                const coords = convertPositionToMapCoords(item.Position);
                 if (coords) {
-                    let color = 'red';
-                    if (exfil.status === 0) {
-                        color = 'green';
-                    }
-                    else if (exfil.status === 1) {
-                        color = 'yellow';
-                    }
-
                     ctx.beginPath();
-                    ctx.moveTo(coords.x, coords.y - 5 / zoom);
-                    ctx.lineTo(coords.x - 5 / zoom, coords.y + 5 / zoom);
-                    ctx.lineTo(coords.x + 5 / zoom, coords.y + 5 / zoom);
-                    ctx.closePath();
-                    ctx.fillStyle = color;
+                    ctx.arc(coords.x, coords.y, 5 / zoom, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'green';
                     ctx.fill();
                     ctx.strokeStyle = 'white';
                     ctx.lineWidth = 1 / zoom;
                     ctx.stroke();
 
-                    ctx.font = `${12 / zoom}px Arial`;
-                    ctx.fillStyle = 'white';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(exfil.name, coords.x, coords.y + 25 / zoom);
+                    if (item.Value >= importantLootPrice) {
+                        ctx.beginPath();
+                        ctx.arc(coords.x, coords.y, 7 / zoom, 0, 2 * Math.PI);
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2 / zoom;
+                        ctx.stroke();
+                    }
+                }
+            }
+        });
+
+        if (showContainers && containers.length > 0) {
+            containers.forEach(container => {
+                const containerType = container.name.replace(/\s+/g, '').toLowerCase();
+                const checkbox = document.getElementById(`container${containerType.charAt(0).toUpperCase() + containerType.slice(1)}`);
+                if (checkbox && checkbox.checked) {
+                    const containerItemsMatch = container.items.some(item => {
+                        const itemName = item.Name ? item.Name.toLowerCase() : '';
+                        return item.Value >= minLootValue && itemName.includes(searchQuery);
+                    }) || container.items.length === 0;
+
+                    if (containerItemsMatch) {
+                        const coords = convertExfilToMapCoords(container.position);
+                        if (coords) {
+                            const heightDifference = container.position.z - localPlayerZ;
+
+                            ctx.beginPath();
+                            if (heightDifference > 2.5) {
+                                ctx.moveTo(coords.x, coords.y - 5 / zoom);
+                                ctx.lineTo(coords.x - 5 / zoom, coords.y + 5 / zoom);
+                                ctx.lineTo(coords.x + 5 / zoom, coords.y + 5 / zoom);
+                                ctx.closePath();
+                                ctx.fillStyle = 'yellow';
+                            } else if (heightDifference < -2.5) {
+                                ctx.moveTo(coords.x, coords.y + 5 / zoom);
+                                ctx.lineTo(coords.x - 5 / zoom, coords.y - 5 / zoom);
+                                ctx.lineTo(coords.x + 5 / zoom, coords.y - 5 / zoom);
+                                ctx.closePath();
+                                ctx.fillStyle = 'yellow';
+                            } else {
+                                ctx.arc(coords.x, coords.y, 5 / zoom, 0, 2 * Math.PI);
+                                ctx.fillStyle = 'green';
+                            }
+                            ctx.fill();
+                            ctx.strokeStyle = 'white';
+                            ctx.lineWidth = 1 / zoom;
+                            ctx.stroke();
+
+                            if (container.items.some(item => item.Value >= importantLootPrice)) {
+                                ctx.beginPath();
+                                ctx.arc(coords.x, coords.y, 7 / zoom, 0, 2 * Math.PI);
+                                ctx.strokeStyle = 'red';
+                                ctx.lineWidth = 2 / zoom;
+                                ctx.stroke();
+                            }
+
+                            ctx.font = `${12 / zoom}px Arial`;
+                            ctx.fillStyle = 'white';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(container.name, coords.x, coords.y - 10 / zoom);
+                        }
+                    }
                 }
             });
         }
 
-        function isBoss(playerName) {
-            if (!aiFactions) return false;
-            return aiFactions.some(faction => faction.Name === "Bosses" && faction.Names.includes(playerName));
-        }
+        corpses.forEach(corpse => {
+            const corpseItemsMatch = corpse.Items.some(item => {
+                const itemName = item.Name ? item.Name.toLowerCase() : '';
+                return item.Value >= minLootValue && itemName.includes(searchQuery);
+            });
 
-        function isFollowerOrGuard(playerName) {
-            if (!aiFactions) return false;
-            return aiFactions.some(faction => faction.Name === "Shturman Followers" && faction.Names.includes(playerName));
-        }
+            if (corpseItemsMatch) {
+                const coords = convertPositionToMapCoords(corpse.Position);
+                if (coords) {
+                    const heightDifference = corpse.Position.Z - localPlayerZ;
 
-        function drawArrow(x, y, direction) {
-            const arrowSize = 17 / zoom;
+                    ctx.beginPath();
+                    if (heightDifference > 2.5) {
+                        ctx.moveTo(coords.x, coords.y - 5 / zoom);
+                        ctx.lineTo(coords.x - 5 / zoom, coords.y + 5 / zoom);
+                        ctx.lineTo(coords.x + 5 / zoom, coords.y + 5 / zoom);
+                        ctx.closePath();
+                        ctx.fillStyle = 'yellow';
+                    } else if (heightDifference < -2.5) {
+                        ctx.moveTo(coords.x, coords.y + 5 / zoom);
+                        ctx.lineTo(coords.x - 5 / zoom, coords.y - 5 / zoom);
+                        ctx.lineTo(coords.x + 5 / zoom, coords.y - 5 / zoom);
+                        ctx.closePath();
+                        ctx.fillStyle = 'yellow';
+                    } else {
+                        ctx.arc(coords.x, coords.y, 5 / zoom, 0, 2 * Math.PI);
+                        ctx.fillStyle = 'green';
+                    }
+                    ctx.fill();
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 1 / zoom;
+                    ctx.stroke();
 
-            ctx.save();
+                    if (corpse.Items.some(item => item.Value >= importantLootPrice)) {
+                        ctx.beginPath();
+                        ctx.arc(coords.x, coords.y, 7 / zoom, 0, 2 * Math.PI);
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2 / zoom;
+                        ctx.stroke();
+                    }
 
-            ctx.translate(x, y);
-
-            if (direction === 'up') {
-                ctx.drawImage(arrowUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
-            } else if (direction === 'down') {
-                ctx.scale(1, -1);
-                ctx.drawImage(arrowUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
-            } else if (direction === 'doubleup') {
-                ctx.drawImage(doubleUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
-            } else if (direction === 'doubledown') {
-                ctx.scale(1, -1);
-                ctx.drawImage(doubleUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
+                    ctx.font = `${12 / zoom}px Arial`;
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(corpse.Name, coords.x, coords.y + 25 / zoom);
+                }
             }
+        });
+    }
 
-            ctx.restore();
+    function drawExfils() {
+        const showExfils = document.getElementById('showExfils').checked;
+        if (!showExfils || !exfils || exfils.length === 0) return;
+
+        exfils.forEach(exfil => {
+            const coords = convertExfilToMapCoords(exfil.position);
+            if (coords) {
+                let color = 'red';
+                if (exfil.status === 0) {
+                    color = 'green';
+                } else if (exfil.status === 1) {
+                    color = 'yellow';
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(coords.x, coords.y - 5 / zoom);
+                ctx.lineTo(coords.x - 5 / zoom, coords.y + 5 / zoom);
+                ctx.lineTo(coords.x + 5 / zoom, coords.y + 5 / zoom);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 1 / zoom;
+                ctx.stroke();
+
+                ctx.font = `${12 / zoom}px Arial`;
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.fillText(exfil.name, coords.x, coords.y + 25 / zoom);
+            }
+        });
+    }
+
+    function isBoss(playerName) {
+        if (!aiFactions) return false;
+        return aiFactions.some(faction => faction.Name === "Bosses" && faction.Names.includes(playerName));
+    }
+
+    function isFollowerOrGuard(playerName) {
+        if (!aiFactions) return false;
+
+        // 定义要检查的派系名称数组
+        const factionsToCheck = ["Shturman Followers", "Kaban Guards", "Kollontay Guards", "Reshala Guards", "Rogues"];
+
+        // 检查是否至少有一个派系匹配
+        return factionsToCheck.some(factionName => {
+            return aiFactions.some(faction => faction.Name === factionName && faction.Names.includes(playerName));
+        });
+    }
+
+    function drawArrow(x, y, direction) {
+        const arrowSize = 17 / zoom;
+
+        ctx.save();
+
+        ctx.translate(x, y);
+
+        if (direction === 'up') {
+            ctx.drawImage(arrowUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
+        } else if (direction === 'down') {
+            ctx.scale(1, -1);
+            ctx.drawImage(arrowUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
+        } else if (direction === 'doubleup') {
+            ctx.drawImage(doubleUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
+        } else if (direction === 'doubledown') {
+            ctx.scale(1, -1);
+            ctx.drawImage(doubleUpImage, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
         }
 
-        function convertPositionToMapCoords(position) {
-            const x = mapCenter.x + ((position.X) * scaleFactor);
-            const y = mapCenter.y - ((position.Y) * scaleFactor);
-            return { x, y };
+        ctx.restore();
+    }
+
+    function convertPositionToMapCoords(position) {
+        const x = mapCenter.x + ((position.X) * scaleFactor);
+        const y = mapCenter.y - ((position.Y) * scaleFactor);
+        return {x, y};
+    }
+
+    function convertExfilToMapCoords(position) {
+        const x = mapCenter.x + ((position.x) * scaleFactor);
+        const y = mapCenter.y - ((position.y) * scaleFactor);
+        return {x, y};
+    }
+
+    function handleMouseHover(mouseX, mouseY) {
+        if (!mapData || !mapData.players) return;
+
+        const adjustedMouseX = (mouseX - offsetX) / zoom;
+        const adjustedMouseY = (mouseY - offsetY) / zoom;
+
+        let hoveredEntity = null;
+
+        for (const player of mapData.players) {
+            const coords = convertPositionToMapCoords(player.Position);
+            const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
+
+            if (distance < 8 / zoom) {
+                hoveredEntity = {
+                    type: 'player',
+                    entity: player
+                };
+                break;
+            }
         }
 
-        function convertExfilToMapCoords(position) {
-            const x = mapCenter.x + ((position.x) * scaleFactor);
-            const y = mapCenter.y - ((position.y) * scaleFactor);
-            return { x, y };
-        }
-
-        function handleMouseHover(mouseX, mouseY) {
-            if (!mapData || !mapData.players) return;
-
-            const adjustedMouseX = (mouseX - offsetX) / zoom;
-            const adjustedMouseY = (mouseY - offsetY) / zoom;
-
-            let hoveredEntity = null;
-
-            for (const player of mapData.players) {
-                const coords = convertPositionToMapCoords(player.Position);
+        if (!hoveredEntity && loot) {
+            for (const item of loot) {
+                const coords = convertPositionToMapCoords(item.Position);
                 const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
 
                 if (distance < 8 / zoom) {
                     hoveredEntity = {
-                        type: 'player',
-                        entity: player
+                        type: 'loot',
+                        entity: item
                     };
                     break;
                 }
             }
+        }
 
-            if (!hoveredEntity && loot) {
-                for (const item of loot) {
-                    const coords = convertPositionToMapCoords(item.Position);
-                    const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
+        if (!hoveredEntity && corpses) {
+            for (const corpse of corpses) {
+                const coords = convertPositionToMapCoords(corpse.Position);
+                const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
 
-                    if (distance < 8 / zoom) {
-                        hoveredEntity = {
-                            type: 'loot',
-                            entity: item
-                        };
-                        break;
-                    }
+                if (distance < 8 / zoom) {
+                    hoveredEntity = {
+                        type: 'corpse',
+                        entity: corpse
+                    };
+                    break;
                 }
-            }
-
-            if (!hoveredEntity && corpses) {
-                for (const corpse of corpses) {
-                    const coords = convertPositionToMapCoords(corpse.Position);
-                    const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
-
-                    if (distance < 8 / zoom) {
-                        hoveredEntity = {
-                            type: 'corpse',
-                            entity: corpse
-                        };
-                        break;
-                    }
-                }
-            }
-
-            if (!hoveredEntity && containers) {
-                for (const container of containers) {
-                    const coords = convertExfilToMapCoords(container.position);
-                    const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
-
-                    if (distance < 8 / zoom) {
-                        hoveredEntity = {
-                            type: 'container',
-                            entity: container
-                        };
-                        break;
-                    }
-                }
-            }
-
-            if (hoveredEntity) {
-                showEntityInfo(hoveredEntity, mouseX, mouseY);
-            } else {
-                hidePlayerInfo();
             }
         }
 
-        function showEntityInfo(hoveredEntity, mouseX, mouseY) {
-            if (hoveredEntity.type === 'player') {
-                const player = hoveredEntity.entity;
-                playerInfo.innerHTML = `
-                    <h3>${player.Name} (Lvl: ${player.Lvl})</h3>
-                    ${player.Gear.map(gearItem => `
-                        <p><strong>${gearItem.Slot}:</strong> (${gearItem.ShortName}), Value: ${gearItem.ItemValue}</p>
-                    `).join('')}
-                `;
-            } else if (hoveredEntity.type === 'loot') {
-                const item = hoveredEntity.entity;
-                playerInfo.innerHTML = `
-                    <h3>${item.Name}</h3>
-                    <p>Value: ${item.Value}</p>
-                `;
-            } else if (hoveredEntity.type === 'corpse') {
-                const corpse = hoveredEntity.entity;
-                playerInfo.innerHTML = `
-                    <h3>${corpse.Name}</h3>
-                    ${corpse.Items.map(item => `
-                        <p><strong>${item.Name}:</strong> Value: ${item.Value}</p>
-                    `).join('')}
-                `;
-            } else if (hoveredEntity.type === 'container') {
-                const container = hoveredEntity.entity;
-                playerInfo.innerHTML = `
-                    <h3>${container.name}</h3>
-                    ${container.items.map(item => `
-                        <p><strong>${item.Name}:</strong> Value: ${item.Value}</p>
-                    `).join('')}
-                `;
-            }
+        if (!hoveredEntity && containers) {
+            for (const container of containers) {
+                const coords = convertExfilToMapCoords(container.position);
+                const distance = Math.sqrt(Math.pow(coords.x - adjustedMouseX, 2) + Math.pow(coords.y - adjustedMouseY, 2));
 
-            playerInfo.style.left = `${mouseX + 10}px`;
-            playerInfo.style.top = `${mouseY + 10}px`;
-            playerInfo.style.display = 'block';
+                if (distance < 8 / zoom) {
+                    hoveredEntity = {
+                        type: 'container',
+                        entity: container
+                    };
+                    break;
+                }
+            }
         }
 
-        function hidePlayerInfo() {
-            playerInfo.style.display = 'none';
+        if (hoveredEntity) {
+            showEntityInfo(hoveredEntity, mouseX, mouseY);
+        } else {
+            hidePlayerInfo();
         }
-
-        function connectWebSocket() {
-    fetch('/Configuration/Settings.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Settings.json not found');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const hostname = data.hostname || 'localhost';
-            let protocol;
-            let socketUrl;
-
-            // Determine the protocol based on the hostname
-            if (hostname === 'localhost' || hostname === '0.0.0.0' || hostname === '127.0.0.1' || hostname.startsWith('192.') || hostname.startsWith('client') || hostname.startsWith('10.')) {
-                protocol = 'ws';
-            } else {
-                protocol = 'wss';
-            }
-
-            // Check if hostname starts with "client" to decide whether to include the port
-            if (hostname.startsWith('client')) {
-                // If hostname starts with "client", no port is added
-                socketUrl = `${protocol}://${hostname}/ws/connect`;
-            } else {
-                // Otherwise, include port 8080
-                socketUrl = `${protocol}://${hostname}:8080/ws/connect`;
-            }
-
-            const socket = new WebSocket(socketUrl);
-
-            socket.onopen = () => console.log(`WebSocket connection established with ${hostname} using ${protocol}`);
-
-            socket.onmessage = async (event) => {
-                const data = JSON.parse(event.data);
-
-                if (data.message === "Game has ended. Waiting for new game to start.") {
-                    showWaitingForGame();
-                } else {
-                    hideWaitingForGame();
-                    mapData = mapData || {};
-                    mapData.players = data.players;
-                    loot = data.loot || [];
-                    corpses = data.corpses || [];
-
-                    selectedPlayerId = document.getElementById('playerSelect').value;
-                    updatePlayerSelect(data.players);
-                    drawMap();
-                }
-            };
-
-            socket.onclose = (event) => console.log('WebSocket connection closed:', event.code, event.reason);
-            socket.onerror = (error) => console.error('WebSocket error:', error);
-        })
-        .catch(error => {
-            console.error('Error fetching Settings.json, defaulting to localhost:', error);
-            const hostname = 'localhost';
-            const protocol = 'ws';
-            const port = 8080; // Define port for fallback
-
-            const socket = new WebSocket(`${protocol}://${hostname}:${port}/ws/connect`); // Add port
-
-            socket.onopen = () => console.log(`WebSocket connection established with ${hostname} using ${protocol}`);
-
-            socket.onmessage = async (event) => {
-                const data = JSON.parse(event.data);
-
-                if (data.message === "Game has ended. Waiting for new game to start.") {
-                    showWaitingForGame();
-                } else {
-                    hideWaitingForGame();
-                    mapData = mapData || {};
-                    mapData.players = data.players;
-                    loot = data.loot || [];
-                    corpses = data.corpses || [];
-
-                    selectedPlayerId = document.getElementById('playerSelect').value;
-                    updatePlayerSelect(data.players);
-                    drawMap();
-                }
-            };
-
-            socket.onclose = (event) => console.log('WebSocket connection closed:', event.code, event.reason);
-            socket.onerror = (error) => console.error('WebSocket error:', error);
-        });
-}
-
-function showWaitingForGame() {
-    const waitingDiv = document.createElement('div');
-    waitingDiv.id = 'waitingForGame';
-    waitingDiv.style.position = 'fixed';
-    waitingDiv.style.top = '0';
-    waitingDiv.style.left = '0';
-    waitingDiv.style.width = '100vw';
-    waitingDiv.style.height = '100vh';
-    waitingDiv.style.backgroundColor = 'black';
-    waitingDiv.style.color = 'red';
-    waitingDiv.style.display = 'flex';
-    waitingDiv.style.alignItems = 'center';
-    waitingDiv.style.justifyContent = 'center';
-    waitingDiv.style.fontSize = '24px';
-    waitingDiv.style.zIndex = '1000';
-    waitingDiv.textContent = 'Waiting for Raid to Start';
-
-    document.body.appendChild(waitingDiv);
-}
-
-function hideWaitingForGame() {
-    const waitingDiv = document.getElementById('waitingForGame');
-    if (waitingDiv) {
-        document.body.removeChild(waitingDiv);
     }
-}
 
-window.addEventListener('load', connectWebSocket);
-
-        function updatePlayerSelect(players) {
-            const playerSelect = document.getElementById('playerSelect');
-            playerSelect.innerHTML = '';
-            players.forEach(player => {
-                const option = document.createElement('option');
-                option.value = player.ProfileID;
-                option.textContent = player.Name;
-                option.setAttribute('data-height', player.Position.Z);
-                playerSelect.appendChild(option);
-            });
-
-            if (selectedPlayerId) {
-                playerSelect.value = selectedPlayerId;
-            } else if (players.length > 0) {
-                selectedPlayerId = players[0].ProfileID;
-                playerSelect.value = selectedPlayerId;
-            }
-
-            if (players.length > 0) {
-                updateMapLayer();
-            }
+    function showEntityInfo(hoveredEntity, mouseX, mouseY) {
+        if (hoveredEntity.type === 'player') {
+            const player = hoveredEntity.entity;
+            playerInfo.innerHTML = `
+                        <h3>${player.Name} (Lvl: ${player.Lvl})</h3>
+                        ${player.Gear.map(gearItem => `
+                            <p><strong>${gearItem.Slot}:</strong> (${gearItem.ShortName}), Value: ${gearItem.ItemValue}</p>
+                        `).join('')}
+                    `;
+        } else if (hoveredEntity.type === 'loot') {
+            const item = hoveredEntity.entity;
+            playerInfo.innerHTML = `
+                        <h3>${item.Name}</h3>
+                        <p>Value: ${item.Value}</p>
+                    `;
+        } else if (hoveredEntity.type === 'corpse') {
+            const corpse = hoveredEntity.entity;
+            playerInfo.innerHTML = `
+                        <h3>${corpse.Name}</h3>
+                        ${corpse.Items.map(item => `
+                            <p><strong>${item.Name}:</strong> Value: ${item.Value}</p>
+                        `).join('')}
+                    `;
+        } else if (hoveredEntity.type === 'container') {
+            const container = hoveredEntity.entity;
+            playerInfo.innerHTML = `
+                        <h3>${container.name}</h3>
+                        ${container.items.map(item => `
+                            <p><strong>${item.Name}:</strong> Value: ${item.Value}</p>
+                        `).join('')}
+                    `;
         }
 
-        document.getElementById('showContainers').addEventListener('change', (e) => {
-            const modal = document.getElementById('containerSettingsModal');
-            if (e.target.checked) {
-                modal.style.display = 'flex';
-            } else {
-                modal.style.display = 'none';
-            }
-        });
+        playerInfo.style.left = `${mouseX + 10}px`;
+        playerInfo.style.top = `${mouseY + 10}px`;
+        playerInfo.style.display = 'block';
+    }
 
-        document.getElementById('closeModal').addEventListener('click', () => {
-            document.getElementById('containerSettingsModal').style.display = 'none';
-        });
+    function hidePlayerInfo() {
+        playerInfo.style.display = 'none';
+    }
 
-        document.getElementById('toggleSidebar').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-        });
+    function connectWebSocket() {
+        fetch('/Configuration/Settings.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Settings.json not found');
+                }
+                return response.json();
+            })
+            .then(data => {
+                let hostname = data.hostname || 'localhost';
+                let protocol;
+                let socketUrl;
 
-        document.querySelectorAll('.tabButton').forEach(tab => {
-            tab.addEventListener('click', function () {
-                document.querySelectorAll('.tabButton').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tabContent').forEach(content => content.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(this.id + 'Content').classList.add('active');
+                // Determine the protocol based on the hostname
+                if (hostname === 'localhost' || hostname === '0.0.0.0' || hostname === '127.0.0.1' || hostname.startsWith('192.') || hostname.startsWith('client') || hostname.startsWith('10.')) {
+                    protocol = 'ws';
+                } else {
+                    protocol = 'wss';
+                }
+
+                hostname = window.location.hostname;
+                const port = window.location.port;
+
+                // Check if hostname starts with "client" to decide whether to include the port
+                if (hostname.startsWith('client')) {
+                    // If hostname starts with "client", no port is added
+                    socketUrl = `${protocol}://${hostname}/${port}/connect_v2`;
+                } else {
+                    // Otherwise, include port 8080
+                    socketUrl = `${protocol}://${hostname}:${port}/ws/connect_v2`;
+                }
+
+                const socket = new WebSocket(socketUrl);
+                let previousLoot = []; // 存储上一次的loot
+                let previouscorpses = []; // 存储上一次的loot
+                socket.onopen = () => {
+                    console.log(`WebSocket connection established with ${hostname} using ${protocol}`);
+                    // 设置定时器，每隔1000毫秒（1秒）发送一次消息
+                    setInterval(sendMessage, 100);
+                };
+
+                socket.onmessage = async (event) => {
+                    const data = JSON.parse(event.data);
+
+                    if (data.message === "Game has ended. Waiting for new game to start.") {
+                        showWaitingForGame();
+                    } else {
+                        hideWaitingForGame();
+                        mapData = mapData || {};
+                        mapData.players = data.players;
+                        // loot = data.loot || [];
+                        // corpses = data.corpses || [];
+
+                        // 更新loot，若data.loot为null则使用previousLoot
+                        loot = data.loot !== null ? data.loot : previousLoot;
+                        //console.log(loot)
+                        previousLoot = loot; // 记录当前loot为上一次
+
+                        corpses = data.corpses !== null ? data.corpses : previouscorpses;
+                        previouscorpses = corpses
+
+                        selectedPlayerId = document.getElementById('playerSelect').value;
+                        updatePlayerSelect(data.players);
+                        drawMap();
+
+                        if (showMostValuableLoot && showMostValuableLoot.checked) {
+                            mostValuableLootPopup.style.display = 'block';
+                            updateMostValuableLoot();
+
+                        }
+                    }
+                };
+
+                socket.onclose = (event) => console.log('WebSocket connection closed:', event.code, event.reason);
+                socket.onerror = (error) => console.error('WebSocket error:', error);
+
+                // 定义发送消息的函数
+                function sendMessage() {
+                    // 替换为你想要发送的消息
+                    const message = 'get_data';
+                    socket.send(message);
+                }
+
+
+            })
+            .catch(error => {
+                console.error('Error fetching Settings.json, defaulting to localhost:', error);
+                const hostname = 'localhost';
+                const protocol = 'ws';
+                const port = window.location.port;
+                ; // Define port for fallback
+
+                const socket = new WebSocket(`${protocol}://${hostname}:${port}/ws/connect`); // Add port
+
+                socket.onopen = () => console.log(`WebSocket connection established with ${hostname} using ${protocol}`);
+
+                socket.onmessage = async (event) => {
+                    const data = JSON.parse(event.data);
+
+                    if (data.message === "Game has ended. Waiting for new game to start.") {
+                        showWaitingForGame();
+                    } else {
+                        hideWaitingForGame();
+                        mapData = mapData || {};
+                        mapData.players = data.players;
+                        loot = data.loot || [];
+                        corpses = data.corpses || [];
+
+                        selectedPlayerId = document.getElementById('playerSelect').value;
+                        updatePlayerSelect(data.players);
+                        drawMap();
+                    }
+                };
+
+                socket.onclose = (event) => console.log('WebSocket connection closed:', event.code, event.reason);
+                socket.onerror = (error) => console.error('WebSocket error:', error);
             });
+    }
+
+
+    function showWaitingForGame() {
+        const waitingDiv = document.createElement('div');
+        waitingDiv.id = 'waitingForGame';
+        waitingDiv.style.position = 'fixed';
+        waitingDiv.style.top = '0';
+        waitingDiv.style.left = '0';
+        waitingDiv.style.width = '100vw';
+        waitingDiv.style.height = '100vh';
+        waitingDiv.style.backgroundColor = 'black';
+        waitingDiv.style.color = 'red';
+        waitingDiv.style.display = 'flex';
+        waitingDiv.style.alignItems = 'center';
+        waitingDiv.style.justifyContent = 'center';
+        waitingDiv.style.fontSize = '24px';
+        waitingDiv.style.zIndex = '1000';
+        waitingDiv.textContent = 'Waiting for Raid to Start';
+
+        document.body.appendChild(waitingDiv);
+    }
+
+    function hideWaitingForGame() {
+        const waitingDiv = document.getElementById('waitingForGame');
+        if (waitingDiv) {
+            document.body.removeChild(waitingDiv);
+        }
+    }
+
+    window.addEventListener('load', connectWebSocket);
+
+    function updatePlayerSelect(players) {
+        const playerSelect = document.getElementById('playerSelect');
+        playerSelect.innerHTML = '';
+        players.forEach(player => {
+            const option = document.createElement('option');
+            option.value = player.ProfileID;
+            option.textContent = player.Name;
+            option.setAttribute('data-height', player.Position.Z);
+            playerSelect.appendChild(option);
         });
 
-        document.getElementById('playerSelect').addEventListener('change', (e) => {
-            selectedPlayerId = e.target.value;
-            mapData.players.forEach(player => {
-                player.IsLocalPlayer = (player.ProfileID === selectedPlayerId);
-            });
+        // 从 localStorage 读取 selectedPlayerId
+        const storedPlayerId = localStorage.getItem('selectedPlayerId');
+        // console.log('storedPlayerId', storedPlayerId)
+        // console.log('storedPlayerId', storedPlayerId)
+
+        if (storedPlayerId !== 'null') {
+            selectedPlayerId = storedPlayerId;
+
+        }
+        if (selectedPlayerId && selectedPlayerId !== '') {
+            playerSelect.value = selectedPlayerId;
+            // console.log('playerSelect',playerSelect.value)
+        } else if (players.length > 0) {
+            // console.log('players[0].ProfileID', players[0].ProfileID)
+            selectedPlayerId = players[0].ProfileID;
+            playerSelect.value = selectedPlayerId;
+        }
+
+        // if (selectedPlayerId) {
+        //     playerSelect.value = selectedPlayerId;
+        // } else if (players.length > 0) {
+        //     selectedPlayerId = players[0].ProfileID;
+        //     playerSelect.value = selectedPlayerId;
+        // }
+
+        if (players.length > 0) {
             updateMapLayer();
-            drawMap();
+        }
+    }
+
+    document.getElementById('showContainers').addEventListener('change', (e) => {
+        const modal = document.getElementById('containerSettingsModal');
+        if (e.target.checked) {
+            modal.style.display = 'flex';
+        } else {
+            modal.style.display = 'none';
+        }
+    });
+
+    document.getElementById('closeModal').addEventListener('click', () => {
+        document.getElementById('containerSettingsModal').style.display = 'none';
+    });
+
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('open');
+    });
+
+    document.querySelectorAll('.tabButton').forEach(tab => {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.tabButton').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tabContent').forEach(content => content.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.id + 'Content').classList.add('active');
+        });
+    });
+
+    document.getElementById('playerSelect').addEventListener('change', (e) => {
+        selectedPlayerId = e.target.value;
+        console.log('The user ID you have chosen', selectedPlayerId)
+
+        // 写入本地缓存
+        localStorage.setItem('selectedPlayerId', selectedPlayerId);
+
+        mapData.players.forEach(player => {
+            player.IsLocalPlayer = (player.ProfileID === selectedPlayerId);
+        });
+        updateMapLayer();
+        drawMap();
+    });
+
+    document.getElementById('showMostValuableLoot').addEventListener('change', (e) => {
+        mostValuableLootPopup.style.display = e.target.checked ? 'block' : 'none';
+        if (e.target.checked) {
+            updateMostValuableLoot();
+        }
+    });
+
+    document.getElementById('showPlayerStats').addEventListener('change', (e) => {
+        playerStatsPopup.style.display = e.target.checked ? 'block' : 'none';
+        if (e.target.checked) {
+            updatePlayerStats();
+        }
+    });
+
+    function updateMostValuableLoot() {
+        const mostValuableLootList = document.getElementById('mostValuableLootList');
+        mostValuableLootList.innerHTML = '';
+
+        const sortedLoot = [...loot].sort((a, b) => b.Value - a.Value).slice(0, 15);
+
+        sortedLoot.forEach(item => {
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            const valueCell = document.createElement('td');
+
+            nameCell.textContent = item.Name;
+            valueCell.textContent = item.Value;
+
+            row.appendChild(nameCell);
+            row.appendChild(valueCell);
+
+            mostValuableLootList.appendChild(row);
+        });
+    }
+
+
+    function updatePlayerStats() {
+        let pmcCount = 0;
+        let scavCount = 0;
+        let bossCount = 0;
+        let scavPlayerCount = 0;
+        let rogueCount = 0;
+
+        // I don't know why this code is placed here, but it doesn't seem to affect the display
+        // mapData.players.forEach(player => {
+        //     if (player.IsPMC) pmcCount++;
+        //
+        //     else if (isBoss(player.Name)) bossCount++;
+        //     else if (isFollowerOrGuard(player.Name)) scavCount++;
+        //     else scavCount++;
+        // });
+
+        document.getElementById('pmcCount').textContent = pmcCount;
+        document.getElementById('scavCount').textContent = scavCount;
+        document.getElementById('bossCount').textContent = bossCount;
+        document.getElementById('scavPlayerCount').textContent = scavPlayerCount;
+        document.getElementById('rogueCount').textContent = rogueCount;
+    }
+
+    // window.addEventListener('load', () => {
+    //     const storedPlayerId = localStorage.getItem('selectedPlayerId');
+    //     console.log('get selectedPlayerId', storedPlayerId)
+    //     if (storedPlayerId) {
+    //         console.log('1',document.getElementById('playerSelect').value)
+    //         document.getElementById('playerSelect').value = storedPlayerId;
+    //         console.log('2',document.getElementById('playerSelect').value)
+    //     }
+    // });
+
+    function checkAndUpdatePlayerStats() {
+        const showPlayerStatsCheckbox = document.getElementById('showPlayerStats');
+        const showMostValuableLoot = document.getElementById('showMostValuableLoot');
+        // console.log(showPlayerStatsCheckbox, showPlayerStatsCheckbox.checked)
+        if (showPlayerStatsCheckbox && showPlayerStatsCheckbox.checked) {
+            playerStatsPopup.style.display = 'block';
+            updatePlayerStats();
+        }
+        if (showMostValuableLoot && showMostValuableLoot.checked) {
+            mostValuableLootPopup.style.display = 'block';
+            updateMostValuableLoot();
+
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 记录选择状态
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem(checkbox.id, checkbox.checked);
+            });
         });
 
-        document.getElementById('showMostValuableLoot').addEventListener('change', (e) => {
-            mostValuableLootPopup.style.display = e.target.checked ? 'block' : 'none';
-            if (e.target.checked) {
-                updateMostValuableLoot();
+        // 恢复选择状态
+        checkboxes.forEach(checkbox => {
+            const storedValue = localStorage.getItem(checkbox.id);
+            if (storedValue !== null) {
+                checkbox.checked = (storedValue === 'true');
             }
         });
 
-        document.getElementById('showPlayerStats').addEventListener('change', (e) => {
-            playerStatsPopup.style.display = e.target.checked ? 'block' : 'none';
-            if (e.target.checked) {
-                updatePlayerStats();
-            }
+        // 恢复滑块和数字输入框的值
+        const minLootValueSlider = document.getElementById('minLootValue');
+        const importantLootPriceInput = document.getElementById('importantLootPrice');
+
+        // 恢复滑块的值
+        const storedMinLootValue = localStorage.getItem('minLootValue');
+        if (storedMinLootValue !== null) {
+            minLootValueSlider.value = storedMinLootValue;
+            minLootValueDisplay.textContent = minLootValueSlider.value;
+        }
+
+        // 恢复数字输入框的值
+        const storedImportantLootPrice = localStorage.getItem('importantLootPrice');
+        if (storedImportantLootPrice !== null) {
+            importantLootPriceInput.value = storedImportantLootPrice;
+        }
+
+        // 监听滑块和数字输入框的变化
+        minLootValueSlider.addEventListener('input', () => {
+            localStorage.setItem('minLootValue', minLootValueSlider.value);
         });
 
-        function updateMostValuableLoot() {
-            const mostValuableLootList = document.getElementById('mostValuableLootList');
-            mostValuableLootList.innerHTML = '';
+        importantLootPriceInput.addEventListener('input', () => {
+            localStorage.setItem('importantLootPrice', importantLootPriceInput.value);
+        });
 
-            const sortedLoot = [...loot].sort((a, b) => b.Value - a.Value).slice(0, 15);
+        checkAndUpdatePlayerStats();
+    });
 
-            sortedLoot.forEach(item => {
-                const row = document.createElement('tr');
-                const nameCell = document.createElement('td');
-                const valueCell = document.createElement('td');
 
-                nameCell.textContent = item.Name;
-                valueCell.textContent = item.Value;
+    getAndLoadMap();
+    loadAiFactions();
+    loadExfils();
+    loadContainers();
 
-                row.appendChild(nameCell);
-                row.appendChild(valueCell);
-
-                mostValuableLootList.appendChild(row);
-            });
-        }
-
-        function updatePlayerStats() {
-            let pmcCount = 0;
-            let scavCount = 0;
-            let bossCount = 0;
-
-            mapData.players.forEach(player => {
-                if (player.IsPMC) pmcCount++;
-                else if (isBoss(player.Name)) bossCount++;
-                else if (isFollowerOrGuard(player.Name)) scavCount++;
-                else scavCount++;
-            });
-
-            document.getElementById('pmcCount').textContent = pmcCount;
-            document.getElementById('scavCount').textContent = scavCount;
-            document.getElementById('bossCount').textContent = bossCount;
-        }
-
-        getAndLoadMap();
-        loadAiFactions();
-        loadExfils();
-        loadContainers();
-        connectWebSocket();
-    </script>
+    // connectWebSocket();
+</script>
 </body>
 
 </html>
