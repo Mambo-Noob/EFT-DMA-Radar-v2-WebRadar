@@ -473,4 +473,180 @@ namespace eft_dma_radar.Controllers
             }
         }
     }
+
+    [HttpGet("/ws/connect_v2")]
+    public async Task Connect_c2()
+    {
+        if (HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            await HandleWebSocketAsync(webSocket);
+        }
+        else
+        {
+            HttpContext.Response.StatusCode = 400;
+        }
+    }
+
+    private async Task HandleWebSocketAsync(WebSocket webSocket)
+    {
+        var buffer = new byte[1024 * 4];
+        WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+        var lastLootUpdate = DateTime.UtcNow; // 记录上次更新的时间
+        var lootData = new List<object>(); // 使用 object 类型
+        var exfilsData = new List<object>(); // 使用 object 类型
+        var containersData = new List<object>(); // 使用 object 类型
+        var corpsesData = new List<object>(); // 使用 object 类型
+
+
+        while (!result.CloseStatus.HasValue)
+        {
+            // 处理接收到的消息
+            string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            if (message == "get_data")
+            {
+
+                if (!Memory.InGame)
+                {
+                    var endGameMessage = new { message = "Game has ended. Waiting for new game to start." };
+                    var endGameJson = JsonSerializer.Serialize(endGameMessage);
+                    var endGameBytes = Encoding.UTF8.GetBytes(endGameJson);
+                    var endGameBuffer = new ArraySegment<byte>(endGameBytes);
+
+                    await webSocket.SendAsync(endGameBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                    break; // Exit the loop to close the connection
+                }
+
+                var containerSettings = Program.Config.DefaultContainerSettings;
+                var lootSettings = Program.Config.ProcessLoot;
+                // 每五秒更新 loot 数据
+                if ((DateTime.UtcNow - lastLootUpdate).TotalSeconds >= 5)
+                {
+                    exfilsData = Memory.Exfils.Select(exfil => (object)new
+                    {
+                        exfil.Name,
+                        exfil.Status,
+                        Position = new { exfil.Position.X, exfil.Position.Y, exfil.Position.Z }
+                    }).ToList();
+
+                    corpsesData = Memory.Loot.Loot.OfType<LootCorpse>().Select(corpse => (object)new
+                    {
+                        corpse.Name,
+                        corpse.Items,
+                        corpse.Value,
+                        corpse.Important,
+                        Position = new
+                        {
+                            X = corpse.Position.X,
+                            Y = corpse.Position.Y,
+                            Z = corpse.Position.Z
+                        }
+                    }).ToList();
+
+                    if (lootSettings)
+                    {
+                        lootData = Memory.Loot.Loot.OfType<LootItem>().Select(l => (object)new
+                        {
+                            l.Name,
+                            l.ID,
+                            l.Value,
+                            Position = new { l.Position.X, l.Position.Y, l.Position.Z }
+                        }).ToList();
+
+
+                    }
+                    else
+                    {
+                        lootData = null; // 非五秒情况下 loot 数据为 null
+
+                    }
+
+                    lastLootUpdate = DateTime.UtcNow; // 更新上次更新时间
+                }
+                else
+                {
+                    exfilsData = null;
+                    corpsesData = null;
+                    lootData = null;
+                }
+
+                var Mypdd = Memory.Players;
+
+                int playerCount = Mypdd.Count;
+
+                //Debug.WriteLine($"playerCount_Mypdd: {playerCount}");
+
+                var playersData2 = Mypdd.Select(player => new
+                {
+                    Name = player.Value.Name ?? "Unknown",
+                    IsPMC = player.Value.IsPMC,
+                    IsLocalPlayer = player.Value.IsLocalPlayer,
+                    IsAlive = player.Value.IsAlive,
+                    IsActive = player.Value.IsActive,
+                    Lvl = player.Value.Lvl,
+                    KDA = player.Value.KDA,
+                    ProfileID = player.Value.ProfileID ?? "DefaultProfileID",
+                    AccountID = player.Value.AccountID ?? "DefaultAccountID",
+                    HasExfild = player.Value.HasExfild,
+                    Type = player.Value.Type,
+                    Gear = player.Value.Gear.Select(g => new
+                    {
+                        Slot = g.Key,
+                        LongName = g.Value?.Long ?? "DefaultLongName",
+                        ShortName = g.Value?.Short ?? "DefaultShortName",
+                        ItemValue = g.Value?.Value ?? 0
+                    }).ToList(),
+                    Position = new
+                    {
+                        X = player.Value.Position.X,
+                        Y = player.Value.Position.Y,
+                        Z = player.Value.Position.Z
+                    },
+                    Rotation = new
+                    {
+                        Yaw = player.Value.Rotation.X,
+                        Pitch = player.Value.Rotation.Y
+                    }
+                }).ToList();
+
+                //Debug.WriteLine($"-----------------------");
+                //Debug.WriteLine($"playerCount_Mypdd2: {playersData2.Count}");
+
+                var updateData = new
+                {
+                    timestamp = DateTime.UtcNow, // 添加短时间戳
+
+                    players = playersData2,
+
+                    loot = lootData,
+
+                    exfils = exfilsData,
+
+                    corpses = corpsesData,
+
+                    // containers = containersData,
+                };
+
+
+                var updateJson = JsonSerializer.Serialize(updateData);
+                var updateBytes = Encoding.UTF8.GetBytes(updateJson);
+                var updateBuffer = new ArraySegment<byte>(updateBytes);
+
+                await webSocket.SendAsync(updateBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                Debug.WriteLine("循环");
+            }
+
+        }
+
+        //// 发送消息
+        //var responseMessage = Encoding.UTF8.GetBytes("Message received");
+        //await webSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+        //result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None 
+
+        // 关闭 WebSocket
+        Debug.WriteLine("CLOSE");
+        await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+    }
+}
 }
