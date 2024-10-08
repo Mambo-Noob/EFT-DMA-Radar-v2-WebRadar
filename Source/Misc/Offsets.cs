@@ -57,12 +57,20 @@
     public struct Exfil
     {
         public const uint Settings = 0x70; // [70] Settings : EFT.Interactive.ExitTriggerSettings
+        public const uint Requirements = 0x78; // [78] Requirements : EFT.Interactive.ExfiltrationRequirement[]
         public const uint Status = 0xC0; // [C0] _status : System.Byte
     }
 
-    public struct ExitTriggerSettings
+    public struct ExfilSettings
     {
         public const uint Name = 0x18; // [18] Name : String
+        public const uint Type = 0x28; // [28] ExfiltrationType : System.Int32
+        public const uint Time = 0x2C; // [2C] ExfiltrationTime : Single
+    }
+
+    public struct ExfilRequirements
+    {
+        public const uint Requirement = 0x20; // [20] Requirement : System.Int32
     }
 
     public struct UnityClass
@@ -75,18 +83,31 @@
         public const uint List = 0x18; // [18] list_0x18 : System.Collections.Generic.List<Var>
     }
 
+    public struct Tripwires
+    {
+        public const uint List = 0x10; // [10] list_0x10 : System.Collections.Generic.List<TripwireSynchronizableObject>
+    }
+
+    public struct TripwireSynchronizableObject
+    {
+        public const uint TripwireState = 0x124; // [124] _tripwireState : System.Int32
+        public const uint FromPosition = 0x128; // [128] <FromPosition>k__BackingField : UnityEngine.Vector3
+        public const uint ToPosition = 0x134; // [134] <ToPosition>k__BackingField : UnityEngine.Vector3
+    }
+
     public struct Player // EFT.Player : MonoBehaviour, 
     {
         public static readonly uint[] To_TransformInternal = new uint[] { PlayerBody, 0x28, 0x28, 0x10, 0x20 + (0 * 0x8), 0x10 }; // to TransformInternal
         public const uint MovementContext = 0x50; // to MovementContext
-        public const uint Corpse = 0x408; // EFT.Interactive.Corpse
-        public const uint Profile = 0x630; // [620] <Profile>k__BackingField : EFT.Profile
-        public const uint InventoryController = 0x688; // [678] _inventoryController : -.Player.PlayerInventoryController
+        public const uint Corpse = 0x418; // EFT.Interactive.Corpse
+        public const uint Profile = 0x640; // [630] <Profile>k__BackingField : EFT.Profile
+        public const uint InventoryController = 0x698; // [688] _inventoryController : -.Player.PlayerInventoryController
         public const uint PlayerBody = 0xB8; // [B8] _playerBody : EFT.PlayerBody
-        public const uint Location = 0x5F8; // [5E8] <Location>k__BackingField : String
-        public const uint Physical = 0x640; // [630] Physical : -.GClass
+        public const uint Location = 0x608; // [5F8] <Location>k__BackingField : String
+        public const uint Physical = 0x640; // [640] Physical : -.GClass
         public const uint ProceduralWeaponAnimation = 0x1D8; // [1D8] <ProceduralWeaponAnimation>k__BackingField : EFT.Animations.ProceduralWeaponAnimation
-        public const uint HandsController = 0x690; // [680] _handsController : -.Player.AbstractHandsController
+        public const uint HandsController = 0x6A0; // [690] _handsController : -.Player.AbstractHandsController
+        public const uint IsExtracting = 0x96A; // [95A] <ExitTriggerZone>k__BackingField : Boolean
     }
 
     public struct Profile // EFT.Profile
@@ -174,6 +195,7 @@
         public const uint LootBaseObject = 0x10; // to LootBaseObject
         public const uint ItemOwner = 0x40; // to LootItemBase
         public const uint ContainerItemOwner = 0x120; // to ContainerItemOwner
+        public const uint PlayerProfileID = 0x140;// [140] PlayerProfileID : String
     }
 
     public struct LootItemBase //EFT.InventoryLogic.Item
@@ -181,7 +203,12 @@
         public const uint ItemTemplate = 0x40; // [40] <Template>k__BackingField : EFT.InventoryLogic.ItemTemplate
         public const uint Grids = 0x70; // to Grids
         public const uint Slots = 0x78; // to UnityList
-        public const uint Cartridges = 0x98; // via -.GClass19FD : GClass19D6, IAmmoContainer , to StackSlot
+        public const uint Cartridges = 0x98; // via -.GClass26C7 : GClass2694, IAmmoContainer , to StackSlot
+    }
+
+    public struct WeaponItem
+    {
+        public const uint MagSlotCache = 0xC8; // [C8] _magSlotCache : EFT.InventoryLogic.Slot
     }
 
     public struct StackSlot // EFT.InventoryLogic.StackSlot : Object, IContainer
@@ -250,18 +277,18 @@
 
     public struct FirearmController
     {
-        public const uint WeaponLn = 0x17C; //[174] WeaponLn : Single
+        public const uint WeaponLn = 0x174; //[174] WeaponLn : Single
         public const uint Fireport = 0xD0; //[D0] Fireport : EFT.BifacialTransform //paskakoodi
     }
 
     public struct HandsController
     {
-        public const uint Item = 0x60; //[60] item_0x60 : EFT.InventoryLogic.Item
+        public const uint Item = 0x60; // [60] item_0x60 : EFT.InventoryLogic.Item
     }
 
-    public struct ObservedHandsController
+    public struct ObservedHandsController 
     {
-        public const uint Item = 0x58; //[60] item_0x60 : EFT.InventoryLogic.Item
+        public const uint Item = 0x58; // [58] item_0x58 : EFT.InventoryLogic.Item
     }
 
     public struct BreathEffector
@@ -318,12 +345,17 @@
 
     public struct NightVision
     {
-        public const uint On = 0xEC; //[EC] _on : Boolean
+        public const uint On = 0xEC; //[EC] On : Boolean
     }
 
     public struct VisorEffect
     {
         public const uint Intensity = 0xC0; //[C0] Intensity : Single
+    }
+
+    public struct InventoryBlur
+    {
+        public const uint BlurEnabled = 0x3C; // //[3C] boolean_0x3C : Boolean
     }
 
     public struct PlayerInfo // [Class] -.GClass
@@ -340,25 +372,35 @@
 
     public struct ExfiltrationPoint
     {
+        public const uint PlayersMetAllRequirements = 0x48; // [48] _playersMetAllRequirements : System.Collections.Generic.List<String>
+        public const uint QueuedPlayers = 0x68; // [68] QueuedPlayers : System.Collections.Generic.List<String>
         public const uint EligibleEntryPoints = 0x98; // [98] EligibleEntryPoints : System.String[]
         public const uint EligibleIds = 0xD8; // [D8] EligibleIds : System.Collections.Generic.List<String>
     }
 
     public struct LocalGameWorld // [Class] -.ClientLocalGameWorld : ClientGameWorld
     {
-        public const uint MapName = 0x50; // [50] string_0x50 : String
-        public const uint MainPlayer = 0x140; // [140] MainPlayer : EFT.Player
+        public const uint MapName = 0x60; // [50] string_0x50 : String
+        public const uint MainPlayer = 0x150; // [140] MainPlayer : EFT.Player
         public const uint ExfilController = 0x20; // [20] gClass11CD_0x20 : -.GClass11CD
-        public const uint LootList = 0xC0; // [C0] LootList : System.Collections.Generic.List<GInterface1C43>
-        public const uint RegisteredPlayers = 0xE8; // [E8] RegisteredPlayers : System.Collections.Generic.List<IPlayer>
-        public const uint Grenades = 0x198; // [198] Grenades : -.GClass0822<Int32, Throwable>
-        public const uint RaidStarted = 0x210; // [210] boolean_0x210 : Boolean
+        public const uint LootList = 0xD0; // [C0] LootList : System.Collections.Generic.List<GInterface1C43>
+        public const uint RegisteredPlayers = 0xF8; // [E8] RegisteredPlayers : System.Collections.Generic.List<IPlayer>
+        public const uint ToTripwireManager = 0x180; // [170] gClass20CC_0x170 : -.GClass20CC
+        public const uint Grenades = 0x1A8; // [198] Grenades : -.GClass082D<Int32, Throwable>
+        public const uint RaidStarted = 0x228; // [210] boolean_0x210 : Boolean
+    }
+
+    public struct ToTripwireManager
+    {
+        public const uint TripwireManager = 0x38; // [38] TripwireManager : -.GClass20D0
     }
 
     public struct EFTHardSettings
     {
-        public const uint LOOT_RAYCAST_DISTANCE = 0x210; //[210] LOOT_RAYCAST_DISTANCE : Single
-        public const uint DOOR_RAYCAST_DISTANCE = 0x214; //[214] DOOR_RAYCAST_DISTANCE : Single
+        public const uint LOOT_RAYCAST_DISTANCE = 0x210; // [210] LOOT_RAYCAST_DISTANCE : Single
+        public const uint DOOR_RAYCAST_DISTANCE = 0x214; // [214] DOOR_RAYCAST_DISTANCE : Single
+        public const uint MED_EFFECT_USING_PANEL = 0x3AC; // [3AC] MED_EFFECT_USING_PANEL : Boolean
+
     }
 
     public struct LootableContainer
@@ -375,6 +417,7 @@
     public struct Item
     {
         public const uint Template = 0x40; // [40] <Template>k__BackingField : EFT.InventoryLogic.ItemTemplate
+        public const uint StackObjectsCount = 0x64; // [64] StackObjectsCount : Int32
     }
 
     public struct WeaponTemplate
@@ -393,8 +436,11 @@
 
     public struct MovementContext //EFT.MovementContext
     {
-        public const uint Rotation = 0x27C; //[408] _myRotation : UnityEngine.Vector2 == dogshit, use:  [27C] _rotation : UnityEngine.Vector2
         public const uint BaseMovementState = 0xE0; // [E0] <CurrentState>k__BackingField : EFT.BaseMovementState
+        public const uint PhysicalCondition = 0x300; // [300] _physicalCondition : System.Int32
+        public const uint StateSpeedLimit = 0x308; // [308] <StateSpeedLimit>k__BackingField : Single
+        public const uint StateSprintSpeedLimit = 0x30C; // [30C] <StateSprintSpeedLimit>k__BackingField : Single
+        public const uint Rotation = 0x408; // [408] _myRotation : UnityEngine.Vector2
     }
 
     public struct Physical
@@ -403,6 +449,11 @@
         public const uint HandsStamina = 0x40; // [40] HandsStamina : -.GClass0792
         public const uint StaminaCapacity = 0xC0; // [C0] StaminaCapacity : Single
         public const uint HandsCapacity = 0xC8; // [C8] HandsCapacity : Single
+        public const uint Overweight = 0x8C; // [8C] Overweight : Single
+        public const uint FallDamageMultiplier = 0xBC; // [BC] FallDamageMultiplier : Single
+        public const uint WalkOverweight = 0x90; // [90] WalkOverweight : Single
+        public const uint WalkSpeedLimit = 0x94; // [94] WalkSpeedLimit : Single
+        public const uint PreviousWeight = 0x108; // [108] PreviousWeight : Single
     }
 
     public struct Stamina
@@ -541,5 +592,4 @@
     {
         public static readonly uint[] To_TransfromInternal = new uint[] { 0x10, 0x10 };
     }
-
 }
