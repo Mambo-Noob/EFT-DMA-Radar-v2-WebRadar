@@ -3,3 +3,6 @@ eft-dma-radar.csproj.user
 /obj
 /.vs
 /bin
+api_tarkov_dev_items.json
+Configuration/Settings.json
+mmap.txt
