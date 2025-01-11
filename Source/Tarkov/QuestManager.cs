@@ -1,11 +1,6 @@
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
-using System.Diagnostics;
-using Offsets;
-using System.Threading.Tasks;
 
 namespace eft_dma_radar
 {
@@ -53,7 +48,7 @@ namespace eft_dma_radar
             this.QuestItems = new ConcurrentBag<QuestItem>();
             this.QuestZones = new ConcurrentBag<QuestZone>();
             this.CompletedSubTasks = new HashSet<string>();
-
+            
             if (Memory.IsScav)
             {
                 if (RequiredItems.Count == 0)
@@ -61,7 +56,7 @@ namespace eft_dma_radar
 
                 return;
             }
-            else
+           else
                 RequiredItems = new HashSet<string>();
 
             this.GetQuests();
@@ -201,7 +196,7 @@ namespace eft_dma_radar
 
             questScatterMap.Execute();
 
-            for (int i = 0; i < questCount; i++)
+            for (int i = 0; i <  questCount; i++)
             {
                 try
                 {

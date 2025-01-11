@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using Offsets;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 
 namespace eft_dma_radar
 {
@@ -11,12 +13,15 @@ namespace eft_dma_radar
         private LootManager _lootManager;
         private RegisteredPlayers _rgtPlayers;
         private GrenadeManager _grenadeManager;
+        private TripwireManager _tripwireManager;
         private ExfilManager _exfilManager;
+        private TransitManager _transitManager;
         private PlayerManager _playerManager;
         private Config _config;
         private CameraManager _cameraManager;
         private QuestManager _questManager;
         private Toolbox _toolbox;
+        private World _world;
         private Chams _chams;
         private CorpseManager _corpseManager;
         private ulong _localGameWorld;
@@ -27,7 +32,6 @@ namespace eft_dma_radar
         private volatile bool _refreshLoot = false;
         private volatile string _mapName = string.Empty;
         private volatile bool _isScav = false;
-
         //paskakoodi
         private Aimbot _aimbot = new Aimbot();
 
@@ -48,7 +52,6 @@ namespace eft_dma_radar
             get => _inGame;
         }
 
-        // in InHideout means local game world not false and registered players is 1
         public bool InHideout
         {
             get => _inHideout;
@@ -84,15 +87,36 @@ namespace eft_dma_radar
             get => _lootManager;
         }
 
-        public ReadOnlyCollection<Grenade> Grenades
+        public List<Grenade> Grenades
         {
             get => _grenadeManager?.Grenades;
         }
 
-        public ReadOnlyCollection<Exfil> Exfils
+        public List<Tripwire> Tripwires
+        {
+            get => _tripwireManager?.Tripwires;
+        }
+
+        public List<Exfil> Exfils
         {
             get => _exfilManager?.Exfils;
         }
+
+        public List<Transit> Transits
+        {
+            get => _transitManager?.Transits;
+        }
+
+        public bool IsExtracting
+        {
+            //get => _exfilManager.IsExtracting || _transitManager.IsExtracting;
+            get => _exfilManager.IsExtracting;
+        }
+
+        //public bool IsTransitMode
+        //{
+        //    get => _transitManager?.IsTransitMode ?? false;
+        //}
 
         public CameraManager CameraManager
         {
@@ -115,6 +139,11 @@ namespace eft_dma_radar
             get => _questManager;
         }
 
+        public World World
+        {
+            get => _world;
+        }
+
         public Chams Chams
         {
             get => _chams;
@@ -125,7 +154,7 @@ namespace eft_dma_radar
             get => _corpseManager;
         }
 
-        public ReadOnlyCollection<PlayerCorpse> Corpses
+        public List<PlayerCorpse> Corpses
         {
             get => _corpseManager?.Corpses;
         }
@@ -155,10 +184,8 @@ namespace eft_dma_radar
 
                 this._rgtPlayers.UpdateList();
                 this._rgtPlayers.UpdateAllPlayers();
-
                 //paskakoodi
-                this._aimbot.AimerBotter();
-
+                this._aimbot.AimerBotter();                
                 this.UpdateMisc();
             }
             catch (DMAShutdown)
@@ -275,8 +302,8 @@ namespace eft_dma_radar
 
             while (activeObject.obj != 0x0 && activeObject.obj != lastObject.obj)
             {
-                ulong objectNamePtr = Memory.ReadPtr(activeObject.obj + Offsets.GameObject.ObjectName);
-                string objectNameStr = Memory.ReadString(objectNamePtr, 64);
+                var objectNamePtr = Memory.ReadPtr(activeObject.obj + Offsets.GameObject.ObjectName);
+                var objectNameStr = Memory.ReadString(objectNamePtr, 64);
 
                 if (string.Equals(objectNameStr, objectName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -296,8 +323,8 @@ namespace eft_dma_radar
 
             if (lastObject.obj != 0x0)
             {
-                ulong objectNamePtr = Memory.ReadPtr(lastObject.obj + Offsets.GameObject.ObjectName);
-                string objectNameStr = Memory.ReadString(objectNamePtr, 64);
+                var objectNamePtr = Memory.ReadPtr(lastObject.obj + Offsets.GameObject.ObjectName);
+                var objectNameStr = Memory.ReadString(objectNamePtr, 64);
 
                 if (string.Equals(objectNameStr, objectName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -442,6 +469,18 @@ namespace eft_dma_radar
 
                 if (this._config.MasterSwitch && Memory.GameStatus == Game.GameStatus.InGame)
                 {
+                    if (this._world is null)
+                    {
+                        try
+                        {
+                            this._world = new World();
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.Log($"ERROR loading World: {ex}");
+                        }
+                    }
+
                     if (this._cameraManager is null)
                     {
                         try
@@ -508,6 +547,20 @@ namespace eft_dma_radar
                 else
                     this._exfilManager.RefreshExfils();
 
+                if (this._transitManager is null)
+                {
+                    try
+                    {
+                        this._transitManager = new TransitManager(this._localGameWorld);
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.Log($"ERROR loading TransitController: {ex}");
+                    }
+                }
+                else
+                    this._transitManager.RefreshTransits();
+
                 if (this._grenadeManager is null)
                 {
                     try
@@ -521,6 +574,20 @@ namespace eft_dma_radar
                 }
                 else
                     this._grenadeManager.Refresh();
+
+                if (this._tripwireManager is null)
+                {
+                    try
+                    {
+                        this._tripwireManager = new TripwireManager(this._localGameWorld);
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.Log($"ERROR loading TripwireManager: {ex}");
+                    }
+                }
+                else
+                    this._tripwireManager.Refresh();
 
                 if (this._config.QuestHelper && this._questManager is null)
                 {

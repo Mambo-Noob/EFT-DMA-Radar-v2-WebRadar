@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -435,13 +435,53 @@ namespace eft_dma_radar
                 foreach (var csrs in crsissies)
                 {
                     ulong temp = csrs.GetModuleBase("win32ksgd.sys");
-                    if (temp == 0) continue;
-                    ulong g_session_global_slots = temp + 0x3110;
 
-                    ulong? t1 = csrs.MemReadAs<ulong>(g_session_global_slots);
-                    ulong? t2 = csrs.MemReadAs<ulong>(t1.Value);
-                    ulong? t3 = csrs.MemReadAs<ulong>(t2.Value);
-                    ulong user_session_state = t3.Value;
+                    ulong g_session_global_slots = 0;
+
+                    if (temp == 0 || (Winver >= 26100 && Ubr >= 2605))
+                    {
+                        ulong temp2 = csrs.GetModuleBase("win32k.sys");
+                        g_session_global_slots = temp2 + 0x82538;
+                    }
+                    else
+                    {
+                        g_session_global_slots = temp + 0x3110;
+                    }
+
+                    ulong user_session_state = 0;
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var t1 = csrs.MemReadAs<ulong>(g_session_global_slots);
+                        if (t1.Value == 0) continue;
+
+                        var t2 = csrs.MemReadAs<ulong>(t1.Value + (ulong)(8 * i));
+                        if (t2.Value == 0) continue; //I dont know whytf this relied on luck on prior
+
+                        var t3 = csrs.MemReadAs<ulong>(t2.Value);
+
+                        user_session_state = t3.Value;
+
+                        if (user_session_state > 0x7FFFFFFFFFFF)
+                            break;
+                    }
+
+                    if (Winver >= 26100 && Ubr >= 2605)
+                    {
+                       this.gafAsyncKeyStateExport = user_session_state + 0x3830;
+                    }
+                    else if (Winver >= 26100)
+                    {
+                        this.gafAsyncKeyStateExport = user_session_state + (ulong)(Ubr >= 2314 ? 0x3828 : 0x3820);
+                    }
+                    else if (Winver >= 22631 && Ubr >= 3810)
+                    {
+                        gafAsyncKeyStateExport = user_session_state + 0x36A8;
+                    }
+                    else
+                    {
+                        gafAsyncKeyStateExport = user_session_state + 0x3690;
+                    }
 
 
                     if (Winver >= 22631 && Ubr >= 3810)
@@ -454,12 +494,13 @@ namespace eft_dma_radar
                         Program.Log("Older windows version detected, Attempting to resolve by offset");
                         this.gafAsyncKeyStateExport = user_session_state + 0x3690;
                     }
+
                     if (gafAsyncKeyStateExport > 0x7FFFFFFFFFFF)
                         break;
                 }
                 if (gafAsyncKeyStateExport > 0x7FFFFFFFFFFF)
                 {
-                    Program.Log("Inputhandler success");
+                    Program.Log("Inputhandler success :3 enjoy"); //Meow
                     done_init = true;
                     return true;
                 }
@@ -548,6 +589,14 @@ namespace eft_dma_radar
     }
     public class Aimbot
     {
+        private Config _config;  // Declare _config
+        private float _aimbotFOV;        // Field of View
+        private float _aimbotMaxDistance; // Max Distance
+        private int _aimbotKeybind;      // Keybind
+        public Aimbot()
+        {
+            _config = Program.Config;  // Initialize _config from Program.Config
+        }   
         private Player udPlayer;
         bool bLastHeld;
         private static InputHandla keyboard = new InputHandla();
@@ -656,7 +705,7 @@ namespace eft_dma_radar
             get => Memory.InGame;
         }
 
-        private PlayerManager playamanaga
+        private static PlayerManager playamanaga
         {
             get => Memory.PlayerManager;
         }
@@ -664,18 +713,6 @@ namespace eft_dma_radar
         private Player LocalPlayer
         {
             get => Memory.LocalPlayer;
-        }
-        public Vector3 GetFireportPos()
-        {
-            if (!this.InGame || Memory.InHideout)
-            {
-                MessageBox.Show("Not in game");
-                return new Vector3();
-            }
-            ulong handscontainer = Memory.ReadPtrChain(playamanaga._proceduralWeaponAnimation, new uint[] { ProceduralWeaponAnimation.FirearmContoller, FirearmController.Fireport, Fireport.To_TransfromInternal[0], Fireport.To_TransfromInternal[1] });
-            Transform tranny = new Transform(handscontainer);
-            Vector3 goofy = tranny.GetPosition();
-            return new Vector3(goofy.X, goofy.Z, goofy.Y);
         }
 
         private float D3DXVec3Dot(Vector3 a, Vector3 b)
@@ -720,7 +757,7 @@ namespace eft_dma_radar
                 return new Vector3();
             }
 
-            var boneMatrix = Memory.ReadPtrChain(player.PlayerBody, [0x28, 0x28, 0x10]);
+            var boneMatrix = Memory.ReadPtrChain(player.PlayerBody, [0x30, 0x30, 0x10]);
             var pointer = Memory.ReadPtrChain(boneMatrix, [0x20 + ((uint)PlayerBones.HumanHead * 0x8), 0x10]);
             Transform headTranny = new Transform(pointer, false);
             return headTranny.GetPosition();
@@ -744,103 +781,230 @@ namespace eft_dma_radar
             return false;
         }
 
-        //public bool GetHeadScr(Player player, out Vector2 screen, out Vector3 pos)
-        //{
-        //    screen = new Vector2();
-        //    pos = new Vector3();
-        //    if (player.BoneTransforms != null && player.BoneTransforms.Count != 0 && !player.IsLocalPlayer && player.IsAlive && player.IsActive && Vector3.Distance(player.Position, LocalPlayer.Position) < 100)
-        //    {
-        //        int headBoneIndex = player.RequiredBones.IndexOf(PlayerBones.HumanHead);
-        //        if (headBoneIndex >= 0 && headBoneIndex < player.BoneTransforms.Count && player.BoneTransforms[headBoneIndex] != null)
-        //        {
-        //            if (player.BoneTransforms[headBoneIndex] is not null)
-        //            {
-        //                Vector3 temp = player.BoneTransforms[headBoneIndex].GetPosition();
+        public bool GetBoneScr(Player player, PlayerBones bone, out Vector2 screen, out Vector3 pos)
+        {
+            screen = new Vector2();
+            pos = new Vector3();
 
-        //                Vector3 HeadPos = new Vector3(temp.X, temp.Z, temp.Y);
-        //                Vector2 scrpos = new Vector2(0, 0);
+            if (player.BoneTransforms != null && player.BoneTransforms.Count != 0 && !player.IsLocalPlayer && !player.IsFriendlyActive && player.IsAlive && player.IsActive && Vector3.Distance(player.Position, LocalPlayer.Position) < _config.AimbotMaxDistance)
+            {
+                Vector3 temp = GetBonePosition(player, bone);
+                Vector3 BonePos = new Vector3(temp.X, temp.Z, temp.Y);
+                if (WorldToScreen(BonePos, out Vector2 scrpos))
+                {
+                    screen = scrpos;
+                    pos = BonePos;
+                    return true;
+                }
+            }
+            return false;
+        }
 
-        //                if (WorldToScreen(HeadPos, out scrpos))
-        //                {
-        //                    screen = scrpos;
-        //                    pos = HeadPos;
-        //                    return true;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return false;
-        //}
+        public Vector3 GetBonePosition(Player player, PlayerBones bone)
+        {
+            if (!this.InGame || Memory.InHideout || !player.IsAlive)
+            {
+                return new Vector3();
+            }
+
+            var boneMatrix = Memory.ReadPtrChain(player.PlayerBody, [0x30, 0x30, 0x10]);
+            var pointer = Memory.ReadPtrChain(boneMatrix, [0x20 + ((uint)bone * 0x8), 0x10]);
+            Transform boneTransform = new Transform(pointer, false);
+            return boneTransform.GetPosition();
+        }
+
+        public class SilentAim
+        {
+            private const float Pi = 3.14159265358979323846f;
+
+            private static float DegToRad(float degrees)
+            {
+                return degrees * (Pi / 180.0f);
+            }
+
+            private static float RadToDeg(float radians)
+            {
+                return radians * (180.0f / Pi);
+            }
+
+            public static Vector2 CalculateAngle(Vector3 from, Vector3 to)
+            {
+                Vector3 delta = from - to;
+                float length = delta.Length();
+
+                return new Vector2(
+                    RadToDeg((float)-Math.Atan2(delta.X, -delta.Z)),
+                    RadToDeg((float)Math.Asin(delta.Y / length))
+                );
+            }
+
+            public static void ApplySilentAim(Vector3 fireportPos, Vector3 aimPos)
+            {
+                // Read current view angles
+                Vector2 viewAngles = Memory.ReadValue<Vector2>(playamanaga._movementContext + 0x27C);
+
+                // Calculate desired angle
+                Vector2 angle = CalculateAngle(fireportPos, aimPos);
+
+                // Normalize delta
+                Vector2 delta = angle - viewAngles;
+                delta = NormalizeAngle(delta);
+
+                // Compute gun angle
+                Vector3 gunAngle = new Vector3(
+                    DegToRad(delta.X) / 1.5f,
+                    0.0f,
+                    DegToRad(delta.Y) / 1.5f
+                );
+
+                // Write the new gun angles to memory
+                Memory.WriteValue(playamanaga._proceduralWeaponAnimation + 0x22C, new Vector3(gunAngle.X, -1.0f, gunAngle.Z * -1.0f));
+            }
+
+            private static Vector2 NormalizeAngle(Vector2 angle)
+            {
+                angle.X = NormalizeSingleAngle(angle.X);
+                angle.Y = NormalizeSingleAngle(angle.Y);
+                return angle;
+            }
+
+            private static float NormalizeSingleAngle(float angle)
+            {
+                while (angle > 180.0f) angle -= 360.0f;
+                while (angle < -180.0f) angle += 360.0f;
+                return angle;
+            }
+        }
+
+        // Updated AimerBotter to use GetBoneScr for targeting multiple bones
+        private bool isConfigModified = false; // Tracks if the config has been modified
+        private float originalRecoilX = 1f;
+        private float originalRecoilY = 1f;
+        private float originalWeaponSway = 1f;
 
         public void AimerBotter()
         {
+            _aimbotFOV = _config.AimbotFOV;
+            _aimbotMaxDistance = _config.AimbotMaxDistance; // Max targeting distance
+            _aimbotKeybind = _config.AimbotKeybind;
+            bool aimbotClosest = _config.AimbotClosest;
+            bool SAaimbotClosest = _config.SAAimbotClosest;
+            int SAsilentAimKey = _config.SASilentAimKey; // Silent Aim key
+
+
             if (!InputHandla.done_init)
+            {
                 if (keyboard.Init())
-                    Program.Log("Keyboard hook init");
+                    Program.Log("Keyboard hook initialized");
+            }
 
-            bool bHeld = keyboard.IsKeyDown(0x05);
-
+            // Check if Aimbot or Silent Aim keys are held down
+            bool aimbotHeld = keyboard.IsKeyDown(_aimbotKeybind);
+            bool silentAimHeld = keyboard.IsKeyDown(SAsilentAimKey);
 
             try
             {
-                if (this.InGame && !Memory.InHideout && _cameraManager is not null)
-                {
-                    var players = this.AllPlayers?.Select(x => x.Value).Where(x => x.IsActive && x.IsAlive);
-
-                    if (players.Any())
+                    if (this.InGame && !Memory.InHideout && _cameraManager != null)
                     {
-
-                        this._cameraManager.GetViewmatrixAsync();
-
-                        Vector2 myBussy = LocalPlayer.GetRotationFr();
-                        Vector3 cameraPos = GetFireportPos();
-
-                        if (bHeld && bHeld == bLastHeld && udPlayer is not null && udPlayer.IsAlive && udPlayer.IsActive)
+                        if (aimbotHeld || silentAimHeld)
                         {
-                            GetHeadScr(udPlayer, out Vector2 headPosScr, out Vector3 headPos);
-                            Vector2 rel = new Vector2(headPosScr.X - (1920f / 2f), headPosScr.Y - (1080f / 2f));
-                            var dist = Math.Sqrt((1 + rel.X * rel.X) + (1 + rel.Y * rel.Y));
-                            if (dist < 30f)
+                            // Store original values only once
+                            if (!isConfigModified)
                             {
-                                Vector2 ang = CalcAngle(cameraPos, headPos);
-
-                                if (!float.IsNaN(ang.X) && !float.IsNaN(ang.Y))
-                                {
-                                    LocalPlayer.SetRotationFr(ang);
-                                }
+                                originalRecoilX = _config.RecoilXPercent;
+                                originalRecoilY = _config.RecoilYPercent;
+                                originalWeaponSway = _config.WeaponSwayPercent;
+                                isConfigModified = true;
                             }
+
+                            // Set recoil and sway to zero
+                            _config.RecoilXPercent = 0f;
+                            _config.RecoilYPercent = 0f;
+                            _config.WeaponSwayPercent = 0f;
+                            //string bulletInfo = GetLocalPlayerBulletInfo();
+                            //Program.Log(bulletInfo);
+                            //Program.Log("Recoil and sway set to 0");
                         }
-                        else if (bHeld && (bHeld != bLastHeld || udPlayer is null || !udPlayer.IsAlive || !udPlayer.IsActive))
+                        else if (isConfigModified)
                         {
+                            // Set recoil and sway to zero
+                            _config.RecoilXPercent = 1f;
+                            _config.RecoilYPercent = 1f;
+                            _config.WeaponSwayPercent = 1f;
 
-                            Player clozestPlayer = null;
-                            Vector3 clozestPlayerHead = Vector3.Zero;
-                            double lastDist = 999999;
-                            foreach (var player in players)
+                            isConfigModified = false;
+                            //Program.Log("Recoil and sway restored to default settings");
+                        }
+                    if (aimbotHeld || silentAimHeld)
+                    {
+                        // Main aimbot/silent aim logic
+                        var players = this.AllPlayers?.Select(x => x.Value)
+                            .Where(x => x.IsActive && x.IsAlive && Vector3.Distance(x.Position, LocalPlayer.Position) < _aimbotMaxDistance)
+                            .ToList();
+
+                        if (players != null && players.Any())
+                        {
+                            this._cameraManager.GetViewmatrixAsync();
+
+                            if (silentAimHeld)
                             {
-                                GetHeadScr(player, out Vector2 HeadPosScr, out Vector3 HeadPoss);
+                                Vector3 cameraPos = GetFireportPos();
+                                Player silentAimTarget = GetSABestTarget(players, cameraPos, SAaimbotClosest);
 
-                                Vector2 rel = new Vector2(HeadPosScr.X - (1920f / 2f), HeadPosScr.Y - (1080f / 2f));
-
-                                var dist = Math.Sqrt((1 + rel.X * rel.X) + (1 + rel.Y * rel.Y));
-                                if (dist < lastDist && dist > 2)
+                                if (silentAimTarget != null)
                                 {
-                                    clozestPlayer = player;
-                                    clozestPlayerHead = HeadPoss;
-                                    lastDist = dist;
+                                    Vector3? targetPos = GetSAClosestBoneScr(silentAimTarget, out _);
+                                    if (targetPos.HasValue)
+                                    {
+                                        SilentAim.ApplySilentAim(cameraPos, targetPos.Value);
+                                        udPlayer = silentAimTarget; // Lock onto the silent aim target
+                                        Program.Log($"cameraPos cords are: {cameraPos} and udplayer: {silentAimTarget}");
+                                    }
                                 }
                             }
-                            if (lastDist < 30f)
-                            {
-                                Vector2 ang = CalcAngle(cameraPos, clozestPlayerHead);
 
-                                if (!float.IsNaN(ang.X) && !float.IsNaN(ang.Y))
+                            if (aimbotHeld)
+                            {
+                                Vector3 cameraPos = GetFireportPos();
+
+                                if (aimbotHeld == bLastHeld && udPlayer != null && udPlayer.IsAlive && udPlayer.IsActive)
                                 {
-                                    LocalPlayer.SetRotationFr(ang);
-                                    udPlayer = clozestPlayer;
+                                    Vector3? targetPos = GetClosestBoneScr(udPlayer, out Vector2 screenPos);
+                                    if (targetPos.HasValue)
+                                    {
+                                        Vector2 rel = new Vector2(screenPos.X - (1920f / 2f), screenPos.Y - (1080f / 2f));
+                                        var distToCrosshair = Math.Sqrt((rel.X * rel.X) + (rel.Y * rel.Y));
+
+                                        if (distToCrosshair < _aimbotFOV)
+                                        {
+                                            Vector2 ang = CalcAngle(cameraPos, targetPos.Value);
+                                            if (!float.IsNaN(ang.X) && !float.IsNaN(ang.Y))
+                                            {
+                                                LocalPlayer.SetRotationFr(ang);
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (aimbotHeld != bLastHeld || udPlayer == null || !udPlayer.IsAlive || !udPlayer.IsActive)
+                                {
+                                    Player aimbotTarget = GetBestTarget(players, cameraPos, aimbotClosest);
+
+                                    if (aimbotTarget != null)
+                                    {
+                                        Vector3? closestBone = GetClosestBoneScr(aimbotTarget, out Vector2 screenPos);
+                                        if (closestBone.HasValue)
+                                        {
+                                            Vector2 ang = CalcAngle(cameraPos, closestBone.Value);
+
+                                            if (!float.IsNaN(ang.X) && !float.IsNaN(ang.Y))
+                                            {
+                                                LocalPlayer.SetRotationFr(ang);
+                                                udPlayer = aimbotTarget; // Lock onto the aimbot target
+                                            }
+                                        }
+                                    }
                                 }
                             }
-
                         }
                     }
                 }
@@ -850,9 +1014,179 @@ namespace eft_dma_radar
                 Program.Log($"ERROR -> Aimer botter -> {ex.Message}\nStackTrace:{ex.StackTrace}");
             }
 
+            bLastHeld = aimbotHeld || silentAimHeld; // Update the held state for the next frame
         }
 
+        public string GetLocalPlayerBulletInfo()
+        {
+            // Define a StringBuilder to store logs
+            StringBuilder logBuilder = new StringBuilder();
 
+                    // Read bullet information from the ammo template
+                    float bulletSpeed = LocalPlayer.bullet_speed; // InitialSpeed
+                    float ballisticCoefficient = LocalPlayer.ballistic_coeff; // BallisticCoefficient
+                    float bulletMass = LocalPlayer.bullet_mass; // BulletMassGram
+                    float bulletDiameter = LocalPlayer.bullet_diam; // BulletDiameterMillimeters
+
+                    // Log the information
+                    logBuilder.AppendLine($"Bullet Speed: {bulletSpeed} m/s");
+                    logBuilder.AppendLine($"Ballistic Coefficient: {ballisticCoefficient}");
+                    logBuilder.AppendLine($"Bullet Mass: {bulletMass} g");
+                    logBuilder.AppendLine($"Bullet Diameter: {bulletDiameter} mm");
+
+            // Return the collected logs as a string
+            return logBuilder.ToString();
+        }
+        
+        public Vector3 GetFireportPos()
+        {
+            if (!this.InGame || Memory.InHideout)
+            {
+                MessageBox.Show("Not in game");
+                return new Vector3();
+            }
+            ulong handscontainer = Memory.ReadPtrChain(playamanaga._proceduralWeaponAnimation, new uint[] { ProceduralWeaponAnimation.FirearmContoller, FirearmController.Fireport, Fireport.To_TransfromInternal[0], Fireport.To_TransfromInternal[1] });
+            Transform tranny = new Transform(handscontainer);
+            Vector3 goofy = tranny.GetPosition();
+            
+            return new Vector3(goofy.X, goofy.Z, goofy.Y);
+        }
+        
+private Player GetBestTarget(List<Player> players, Vector3 cameraPos, bool aimbotClosest)
+{
+    if (players == null || !players.Any()) return null;
+
+    return aimbotClosest
+        ? players.Where(player =>
+        {
+            Vector2 screenPos;
+            return GetClosestBoneScr(player, out screenPos).HasValue && 
+                   Vector2.Distance(screenPos, new Vector2(1920f / 2f, 1080f / 2f)) < _config.AimbotFOV;
+        })
+        .OrderBy(player => Vector3.Distance(player.Position, LocalPlayer.Position))
+        .FirstOrDefault()
+        : players.Where(player =>
+        {
+            Vector2 screenPos;
+            return GetClosestBoneScr(player, out screenPos).HasValue &&
+                   Vector2.Distance(screenPos, new Vector2(1920f / 2f, 1080f / 2f)) < _config.AimbotFOV;
+        })
+        .OrderBy(player =>
+        {
+            GetClosestBoneScr(player, out Vector2 screenPos);
+            return Vector2.Distance(screenPos, new Vector2(1920f / 2f, 1080f / 2f));
+        })
+        .FirstOrDefault();
+}
+
+private Player GetSABestTarget(List<Player> players, Vector3 cameraPos, bool aimbotClosest)
+{
+    if (players == null || !players.Any()) return null;
+
+    return aimbotClosest
+        ? players.Where(player =>
+        {
+            Vector2 screenPos;
+            return GetSAClosestBoneScr(player, out screenPos).HasValue && 
+                   Vector2.Distance(screenPos, new Vector2(1920f / 2f, 1080f / 2f)) < _config.SAAimbotFOV;
+        })
+        .OrderBy(player => Vector3.Distance(player.Position, LocalPlayer.Position))
+        .FirstOrDefault()
+        : players.Where(player =>
+        {
+            Vector2 screenPos;
+            return GetSAClosestBoneScr(player, out screenPos).HasValue &&
+                   Vector2.Distance(screenPos, new Vector2(1920f / 2f, 1080f / 2f)) < _config.SAAimbotFOV;
+        })
+        .OrderBy(player =>
+        {
+            GetSAClosestBoneScr(player, out Vector2 screenPos);
+            return Vector2.Distance(screenPos, new Vector2(1920f / 2f, 1080f / 2f));
+        })
+        .FirstOrDefault();
+}
+public Vector3? GetClosestBoneScr(Player player, out Vector2 screenPos)
+{
+    screenPos = new Vector2();
+    double closestDistance = double.MaxValue;
+    Vector3? closestBonePos = null;
+
+    List<(bool, PlayerBones)> boneOptions = new List<(bool, PlayerBones)>
+    {
+        (_config.AimbotHead, PlayerBones.HumanHead),
+        (_config.AimbotNeck, PlayerBones.HumanNeck),
+        (_config.AimbotChest, PlayerBones.HumanSpine3),
+        (_config.AimbotPelvis, PlayerBones.HumanPelvis),
+        (_config.AimbotRightLeg, PlayerBones.HumanRCalf),
+        (_config.AimbotLeftLeg, PlayerBones.HumanLCalf)
+    };
+
+    foreach (var (isEnabled, bone) in boneOptions)
+    {
+        if (!isEnabled) continue;
+
+        if (GetBoneScr(player, bone, out Vector2 boneScreenPos, out Vector3 bonePos))
+        {
+            float distanceToCenter = Vector2.Distance(boneScreenPos, new Vector2(1920f / 2f, 1080f / 2f));
+            if (distanceToCenter < _config.AimbotFOV && distanceToCenter < closestDistance) // Check if within FOV
+            {
+                closestDistance = distanceToCenter;
+                closestBonePos = bonePos;
+                screenPos = boneScreenPos;
+            }
+        }
+    }
+
+    return closestBonePos;
+}
+private int _currentBoneIndex = 0; // Tracks the current bone index
+private DateTime _lastBoneSwitchTime = DateTime.MinValue; // Tracks the last switch time
+
+public Vector3? GetSAClosestBoneScr(Player player, out Vector2 screenPos)
+{
+    screenPos = new Vector2();
+    double closestDistance = double.MaxValue;
+    Vector3? closestBonePos = null;
+
+    // Define the bone options
+    List<(bool isEnabled, PlayerBones bone)> boneOptions = new List<(bool, PlayerBones)>
+    {
+        (_config.SAAimbotHead, PlayerBones.HumanHead),
+        (_config.SAAimbotNeck, PlayerBones.HumanNeck),
+        (_config.SAAimbotChest, PlayerBones.HumanSpine3),
+        (_config.SAAimbotPelvis, PlayerBones.HumanPelvis),
+        (_config.SAAimbotRightLeg, PlayerBones.HumanRCalf),
+        (_config.SAAimbotLeftLeg, PlayerBones.HumanLCalf)
+    };
+
+    // Filter enabled bones
+    var enabledBones = boneOptions.Where(option => option.isEnabled).ToList();
+    if (!enabledBones.Any()) return null; // No bones are enabled
+
+    // Handle bone switching logic every 0.2 seconds
+    if ((DateTime.Now - _lastBoneSwitchTime).TotalSeconds > 0.2)
+    {
+        _currentBoneIndex = (_currentBoneIndex + 1) % enabledBones.Count;
+        _lastBoneSwitchTime = DateTime.Now;
+    }
+
+    // Get the currently selected bone
+    var currentBone = enabledBones[_currentBoneIndex].bone;
+
+    // Check the selected bone
+    if (GetBoneScr(player, currentBone, out Vector2 boneScreenPos, out Vector3 bonePos))
+    {
+        float distanceToCenter = Vector2.Distance(boneScreenPos, new Vector2(1920f / 2f, 1080f / 2f));
+        if (distanceToCenter < _config.SAAimbotFOV && distanceToCenter < closestDistance) // Check if within FOV
+        {
+            closestDistance = distanceToCenter;
+            closestBonePos = bonePos;
+            screenPos = boneScreenPos;
+        }
+    }
+
+    return closestBonePos;
+}
 
         public void AimerBotterKmBox()
         {

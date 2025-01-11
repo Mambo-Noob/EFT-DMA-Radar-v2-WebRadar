@@ -1,7 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.WebSockets;
 
 namespace eft_dma_radar
 {
@@ -16,28 +21,10 @@ namespace eft_dma_radar
         private static readonly object _logLock = new();
         private static readonly StreamWriter _log;
 
-        /// <summary>
-        /// Global Program Configuration.
-        /// </summary>
-        public static Config Config
-        {
-            get => _config;
-        }
-
-        public static Watchlist Watchlist
-        {
-            get => _watchlist;
-        }
-
-        public static AIFactionManager AIFactionManager
-        {
-            get => _aiFactionManager;
-        }
-
-        public static LootFilterManager LootFilterManager
-        {
-            get => _lootFilterManager;
-        }
+        public static Config Config => _config;
+        public static Watchlist Watchlist => _watchlist;
+        public static AIFactionManager AIFactionManager => _aiFactionManager;
+        public static LootFilterManager LootFilterManager => _lootFilterManager;
 
         #region Static Constructor
         static Program()
@@ -65,19 +52,29 @@ namespace eft_dma_radar
         #endregion
 
         #region Program Entry Point
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static void Main()
+    static void Main(string[] args)
+    {
+        try
         {
-            Console.OutputEncoding = System.Text.Encoding.Unicode; // allow russian chars
+            InitializeRadar();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Radar initialization failed: " + ex.Message);
+        }
+    }
+        #endregion
+
+        private static void InitializeRadar()
+        {
+            Console.OutputEncoding = System.Text.Encoding.Unicode; // allow Russian chars
             try
             {
                 if (_singleton)
                 {
                     RuntimeHelpers.RunClassConstructor(typeof(TarkovDevManager).TypeHandle); // invoke static constructor
                     RuntimeHelpers.RunClassConstructor(typeof(Memory).TypeHandle); // invoke static constructor
+                    RuntimeHelpers.RunClassConstructor(typeof(LootManager).TypeHandle);
                     ApplicationConfiguration.Initialize();
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(true);
@@ -93,12 +90,85 @@ namespace eft_dma_radar
                 MessageBox.Show(ex.ToString(), "EFT Radar", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        #endregion
+
+public static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureWebHostDefaults(webBuilder =>
+        {
+            // Set the content root to the directory of the executable
+            webBuilder.UseContentRoot(AppContext.BaseDirectory);
+
+            webBuilder.UseKestrel(serverOptions =>
+            {
+                // Bind to all IP addresses on port 80
+                serverOptions.ListenAnyIP(8080);
+
+                // Additionally bind to specific hostnames
+                serverOptions.Listen(System.Net.IPAddress.Loopback, 8080); // localhost
+                serverOptions.Listen(System.Net.IPAddress.IPv6Loopback, 8080); // localhost IPv6
+            });
+
+            webBuilder.ConfigureServices(services =>
+            {
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowAllOrigins",
+                        builder => builder
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod());
+                });
+                services.AddControllers();
+                services.AddWebSockets(options => { options.KeepAliveInterval = TimeSpan.FromSeconds(120); });
+            });
+
+            webBuilder.Configure((context, app) =>
+            {
+                app.UseDeveloperExceptionPage();
+
+                // Middleware to redirect from / to /index.html
+                app.Use(async (context, next) =>
+                {
+                    if (context.Request.Path == "/")
+                    {
+                        context.Response.Redirect("/index.html");
+                        return;
+                    }
+                    await next();
+                });
+
+                // Serve static files from the directory where the EXE is located
+                string exePath = AppContext.BaseDirectory;
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(exePath),
+                    RequestPath = ""
+                });
+
+                app.UseRouting();
+                app.UseCors("AllowAllOrigins");
+                app.UseWebSockets();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    endpoints.Map("/ws/connect", async context =>
+                    {
+                        if (context.WebSockets.IsWebSocketRequest)
+                        {
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            // Handle WebSocket connection here
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 400;
+                        }
+                    });
+                });
+            });
+        });
 
         #region Methods
-        /// <summary>
-        /// Public logging method, writes to Debug Trace, and a Log File (if enabled in Config.Json)
-        /// </summary>
         public static void Log(string msg)
         {
             Debug.WriteLine(msg);
@@ -106,13 +176,11 @@ namespace eft_dma_radar
             {
                 lock (_logLock) // Sync access to File IO
                 {
-                    Console.WriteLine($"{DateTime.Now}: {msg}");
+                    _log.WriteLine($"{DateTime.Now}: {msg}");
                 }
             }
         }
-        /// <summary>
-        /// Hide the 'Program Console Window'.
-        /// </summary>
+
         public static void HideConsole()
         {
             ShowWindow(GetConsoleWindow(), ((_config?.Logging ?? false) ? 1 : 0)); // 0 : SW_HIDE

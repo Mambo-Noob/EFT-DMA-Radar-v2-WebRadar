@@ -3,7 +3,6 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Text.Json;
-using static eft_dma_radar.Maps;
 
 namespace eft_dma_radar
 {
@@ -39,10 +38,10 @@ namespace eft_dma_radar
         {
             TarkovDevResponse jsonResponse;
 
-            if (ShouldFetchDataFromApi())
-                jsonResponse = FetchDataFromApi();
-            else
-                jsonResponse = LoadDataFromFile();
+            //if (ShouldFetchDataFromApi())
+            jsonResponse = FetchDataFromApi();
+            //else
+            //jsonResponse = LoadDataFromFile();
 
             if (jsonResponse is not null)
             {
@@ -68,202 +67,212 @@ namespace eft_dma_radar
                 var body = new
                 {
                     query = @"query {
-                                    items {
-                                        id
-                                        name
-                                        shortName
-                                        normalizedName
-                                        basePrice
-                                        avg24hPrice
-                                        low24hPrice
-                                        high24hPrice
-                                        sellFor {
-                                        price
-                                        vendor {
-                                            normalizedName
-                                        }
-                                        }
-                                        category {
-                                        id
-                                        name
-                                        normalizedName
-                                        }
-                                        weight
-                                        categories {
-                                        id
-                                        name
-                                        normalizedName
-                                        }
-                                    }
-                                    tasks {
-                                        id
-                                        name
-                                        objectives {
-                                            id
-                                            type
-                                            description
-                                            maps {
-                                                id
-                                                name
-                                                normalizedName
-                                            }
-                                            ... on TaskObjectiveItem {
-                                                items {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                                zones {
-                                                id
-                                                map {
-                                                    id
-                                                    normalizedName
-                                                    name
-                                                }
-                                                position {
-                                                    y
-                                                    x
-                                                    z
-                                                }
-                                                }
-                                                requiredKeys {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                                count
-                                                foundInRaid
-                                            }
-                                            ... on TaskObjectiveMark {
-                                                id
-                                                description
-                                                markerItem {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                                maps {
-                                                id
-                                                normalizedName
-                                                name
-                                                }
-                                                zones {
-                                                id
-                                                map {
-                                                    id
-                                                    normalizedName
-                                                    name
-                                                }
-                                                position {
-                                                    y
-                                                    x
-                                                    z
-                                                }
-                                                }
-                                                requiredKeys {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                            }
-                                            ... on TaskObjectiveQuestItem {
-                                                id
-                                                description
-                                                requiredKeys {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                                maps {
-                                                id
-                                                normalizedName
-                                                name
-                                                }
-                                                zones {
-                                                id
-                                                map {
-                                                    id
-                                                    normalizedName
-                                                    name
-                                                }
-                                                position {
-                                                    y
-                                                    x
-                                                    z
-                                                }
-                                                }
-                                                requiredKeys {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                                questItem {
-                                                    id
-                                                    name
-                                                    shortName
-                                                    normalizedName
-                                                    description
-                                                }
-                                                count
-                                            }
-                                            ... on TaskObjectiveBasic {
-                                                id
-                                                description
-                                                requiredKeys {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                                maps {
-                                                id
-                                                normalizedName
-                                                name
-                                                }
-                                                zones {
-                                                id
-                                                map {
-                                                    id
-                                                    normalizedName
-                                                    name
-                                                }
-                                                position {
-                                                    y
-                                                    x
-                                                    z
-                                                }
-                                                }
-                                                requiredKeys {
-                                                id
-                                                name
-                                                shortName
-                                                }
-                                            }
-                                        }
-                                    }
-                                    questItems {
-                                        id
-                                        shortName
-                                        name
-                                        normalizedName
-                                    }
-                                    lootContainers {
-                                        id
-                                        normalizedName
-                                        name
-                                    }
-                                    maps{
-                                        name
-                                        extracts{
-                                            name
-                                            position {
-                                                x
-                                                y
-                                                z
-                                            }
-                                        }
-                                    }
-                                }"
+  items {
+    id
+    name
+    shortName
+    normalizedName
+    basePrice
+    avg24hPrice
+    low24hPrice
+    high24hPrice
+    sellFor {
+      price
+      vendor {
+        normalizedName
+      }
+    }
+    category {
+      id
+      name
+      normalizedName
+    }
+    weight
+    categories {
+      id
+      name
+      normalizedName
+    }
+  }
+  tasks {
+    id
+    name
+    objectives {
+      id
+      type
+      description
+      maps {
+        id
+        name
+        normalizedName
+      }
+      ... on TaskObjectiveItem {
+        items {
+          id
+          name
+          shortName
+        }
+        zones {
+          id
+          map {
+            id
+            normalizedName
+            name
+          }
+          position {
+            y
+            x
+            z
+          }
+        }
+        requiredKeys {
+          id
+          name
+          shortName
+        }
+        count
+        foundInRaid
+      }
+      ... on TaskObjectiveMark {
+        id
+        description
+        markerItem {
+          id
+          name
+          shortName
+        }
+        maps {
+          id
+          normalizedName
+          name
+        }
+        zones {
+          id
+          map {
+            id
+            normalizedName
+            name
+          }
+          position {
+            y
+            x
+            z
+          }
+        }
+        requiredKeys {
+          id
+          name
+          shortName
+        }
+      }
+      ... on TaskObjectiveQuestItem {
+        id
+        description
+        requiredKeys {
+          id
+          name
+          shortName
+        }
+        maps {
+          id
+          normalizedName
+          name
+        }
+        zones {
+          id
+          map {
+            id
+            normalizedName
+            name
+          }
+          position {
+            y
+            x
+            z
+          }
+        }
+        requiredKeys {
+          id
+          name
+          shortName
+        }
+        questItem {
+          id
+          name
+          shortName
+          normalizedName
+          description
+        }
+        count
+      }
+      ... on TaskObjectiveBasic {
+        id
+        description
+        requiredKeys {
+          id
+          name
+          shortName
+        }
+        maps {
+          id
+          normalizedName
+          name
+        }
+        zones {
+          id
+          map {
+            id
+            normalizedName
+            name
+          }
+          position {
+            y
+            x
+            z
+          }
+        }
+        requiredKeys {
+          id
+          name
+          shortName
+        }
+      }
+    }
+  }
+  questItems {
+    id
+    shortName
+    name
+    normalizedName
+  }
+  lootContainers {
+    id
+    normalizedName
+    name
+  }
+  maps {
+    name
+    extracts {
+      name
+      position {
+        x
+        y
+        z
+      }
+    }
+    transits {
+      id
+      description
+      position {
+        x
+        y
+        z
+      }
+    }
+  }
+}"
                 };
+
                 var jsonBody = JsonSerializer.Serialize(body);
                 var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
@@ -272,14 +281,7 @@ namespace eft_dma_radar
                     var response = client.PostAsync("https://api.tarkov.dev/graphql", content).Result;
 
                     if (response.StatusCode == HttpStatusCode.RequestTimeout)
-                    {
-                        Program.Log("Tarkov.Dev API request failed - attempting fall back to file");
-
-                        if (!TarkovDevManager.DataFileExists)
-                            throw new FileNotFoundException($"Tarkov.Dev API request failed & the data file '{FileName}' doesn't exist!");
-
-                        return TarkovDevManager.LoadDataFromFile();
-                    }
+                        throw new FileNotFoundException($"Tarkov.Dev API request failed!");
 
                     response.EnsureSuccessStatusCode();
 
@@ -287,9 +289,21 @@ namespace eft_dma_radar
                     File.WriteAllText(FileName, responseString);
                     return JsonSerializer.Deserialize<TarkovDevResponse>(responseString);
                 }
-                catch (HttpRequestException ex)
+                catch (Exception ex)
                 {
-                    throw new FileNotFoundException($"Tarkov.Dev API request failed & the data file '{FileName}' doesn't exist!");
+                    try
+                    {
+                        Program.Log("Tarkov.Dev API request failed - attempting fall back to file");
+
+                        if (!TarkovDevManager.DataFileExists)
+                            throw new FileNotFoundException($"The data file '{FileName}' doesn't exist!");
+
+                        return TarkovDevManager.LoadDataFromFile();
+                    }
+                    catch
+                    {
+                        throw new FileNotFoundException($"Tarkov.Dev API request failed & the data file '{FileName}' doesn't exist!");
+                    }
                 }
             }
         }
@@ -436,18 +450,31 @@ namespace eft_dma_radar
                 var newMap = new Maps()
                 {
                     name = map.name,
-                    extracts = new List<Extract>()
+                    extracts = new List<Maps.Extract>(),
+                    transits = new List<Maps.MapTransit>()
                 };
 
                 foreach (var extract in map.extracts)
                 {
-                    var newExtract = new Extract()
+                    var newExtract = new Maps.Extract()
                     {
                         name = extract.name,
                         position = new Vector3(extract.position.x, extract.position.z, extract.position.y)
                     };
 
                     newMap.extracts.Add(newExtract);
+                };
+
+                foreach (var transit in map.transits)
+                {
+                    var newTransit = new Maps.MapTransit()
+                    {
+                        id = transit.id,
+                        description = transit.description,
+                        position = new Vector3(transit.position.x, transit.position.z, transit.position.y)
+                    };
+
+                    newMap.transits.Add(newTransit);
                 };
 
                 _allMaps.TryAdd(newMap.name, newMap);
@@ -466,15 +493,17 @@ namespace eft_dma_radar
 
         public static int GetItemValue(TarkovItem item)
         {
-            int bestPrice = item.avg24hPrice ?? 0;
+            int bestPrice = item.basePrice;
             foreach (var vendor in item.sellFor)
+            {
+                //Program.Log($"[ITEMPRICE] - VENDOR: {vendor.vendor.normalizedName}, PRICE: {vendor.price}");
+                if (vendor.price > bestPrice && vendor.vendor.normalizedName != "flea-market")
                 {
-                    if (vendor.price > bestPrice)
-                    {
-                        bestPrice = vendor.price;
-                    }
+                    bestPrice = vendor.price;
                 }
-
+            }
+            //Program.Log($"[ITEMPRICE] - NAME: {item.name}");
+            //Program.Log($"[ITEMPRICE] - PRICE: {bestPrice}");
             return bestPrice;
         }
         #endregion
@@ -493,14 +522,19 @@ namespace eft_dma_radar
         public int? avg24hPrice { get; set; }
         public int? low24hPrice { get; set; }
         public int? high24hPrice { get; set; }
-        public double weight { get; set; } 
+        public double weight { get; set; }
         public List<Category> categories { get; set; } = new List<Category>();
-        public List<VendorPrice> sellFor { get; set; } = new List<VendorPrice>(); 
+        public List<VendorPrice> sellFor { get; set; } = new List<VendorPrice>();
 
         public class VendorPrice
         {
-            public string vendorName { get; set; }
             public int price { get; set; }
+            public Vendor vendor { get; set; }
+
+            public class Vendor
+            {
+                public string normalizedName { get; set; }
+            }
         }
 
         public class Category
@@ -522,8 +556,8 @@ namespace eft_dma_radar
             public string id { get; set; }
             public string description { get; set; }
             public string type { get; set; }
-            public List<ObjectiveMaps>? maps { get; set; } 
-            public List<ObjectiveZones>? zones { get; set; } 
+            public List<ObjectiveMaps>? maps { get; set; }
+            public List<ObjectiveZones>? zones { get; set; }
             public int? count { get; set; }
             public bool? foundInRaid { get; set; }
             public List<ObjectiveRequiredItem>? items { get; set; }
@@ -548,8 +582,8 @@ namespace eft_dma_radar
     public class ObjectiveZones
     {
         public string id { get; set; }
-        public Map map { get; set; } 
-        public Position position { get; set; } 
+        public Map map { get; set; }
+        public Position position { get; set; }
 
         public class Map
         {
@@ -615,10 +649,25 @@ namespace eft_dma_radar
     {
         public string name { get; set; }
         public List<ExtractInfo> extracts { get; set; }
+        public List<TransitInfo> transits { get; set; }
 
         public class ExtractInfo
         {
             public string name { get; set; }
+            public Position position { get; set; }
+
+            public class Position
+            {
+                public float x { get; set; }
+                public float y { get; set; }
+                public float z { get; set; }
+            }
+        }
+
+        public class TransitInfo
+        {
+            public string id { get; set; }
+            public string description { get; set; }
             public Position position { get; set; }
 
             public class Position
@@ -634,12 +683,20 @@ namespace eft_dma_radar
     {
         public string name { get; set; }
         public List<Extract> extracts { get; set; }
+        public List<MapTransit> transits { get; set; }
 
         public class Extract
         {
             public string name { get; set; }
             public Vector3 position { get; set; }
 
+        }
+
+        public class MapTransit
+        {
+            public string id { get; set; }
+            public string description { get; set; }
+            public Vector3 position { get; set; }
         }
     }
 
@@ -671,7 +728,7 @@ namespace eft_dma_radar
     public class TarkovDevData
     {
         public List<TarkovItem> items { get; set; }
-        public List<TarkovTasks> tasks { get; set; } 
+        public List<TarkovTasks> tasks { get; set; }
         public List<TarkovQuestItems> questItems { get; set; }
         public List<TarkovContainer> lootContainers { get; set; }
         public List<TarkovMap> maps { get; set; }

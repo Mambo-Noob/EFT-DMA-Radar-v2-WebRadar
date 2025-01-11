@@ -1,14 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Text;
-using static eft_dma_radar.Config;
-using Offsets;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics;
-using System.Runtime.CompilerServices;
-using System.Data;
 
 namespace eft_dma_radar
 {
@@ -66,6 +57,14 @@ namespace eft_dma_radar
         /// </summary>
         public PlayerType Type { get; set; }
         /// <summary>
+        /// Player's Bullet Information.
+        /// </summary>
+        public float bullet_speed { get; set; }
+        public float ballistic_coeff { get; set; }
+        public float bullet_mass { get; set; }
+        public float bullet_diam { get; set; }
+        public float bullet_velocity { get; set; }
+        /// <summary>
         /// Player's current health (sum of all 7 body parts).
         /// </summary>
         public int Health { get; private set; } = -1;
@@ -108,14 +107,16 @@ namespace eft_dma_radar
         /// <summary>
         /// Key = Slot Name, Value = Item 'Long Name' in Slot
         /// </summary>
-        public Dictionary<string, GearItem> Gear
+        public List<GearManager.Gear> Gear
         {
-            get => this._gearManager is not null ? this._gearManager.Gear : null;
+            get => this._gearManager is not null ? this._gearManager.GearItems : null;
             set
             {
-                this._gearManager.Gear = value;
+                this._gearManager.GearItems = value;
             }
         }
+
+        public GearManager GearManager => this._gearManager;
         /// <summary>
         /// If 'true', Player object is no longer in the RegisteredPlayers list.
         /// Will be checked if dead/exfil'd on next loop.
@@ -228,6 +229,17 @@ namespace eft_dma_radar
                 this.Type is PlayerType.Rogue ||
                 this.Type is PlayerType.Cultist);
         }
+
+        /// <summary>
+        /// Player is rogue, raider etc.
+        /// </summary>
+        public bool IsEventAI
+        {
+            get => (
+                this.Type is PlayerType.FollowerOfMorana ||
+                this.Type is PlayerType.Zombie);
+        }
+
         /// <summary>
         /// Player is AI/human-controlled and Active/Alive.
         /// </summary>
@@ -246,6 +258,7 @@ namespace eft_dma_radar
                 this.Type is PlayerType.Rogue ||
                 this.Type is PlayerType.OfflineScav ||
                 this.Type is PlayerType.Cultist ||
+                this.Type is PlayerType.Zombie ||
                 this.Type is PlayerType.Boss) && this.IsActive && this.IsAlive;
         }
         /// <summary>
@@ -257,6 +270,12 @@ namespace eft_dma_radar
                 this.Type is PlayerType.LocalPlayer ||
                 this.Type is PlayerType.Teammate) && this.IsActive && this.IsAlive);
         }
+
+        public bool IsZombie
+        {
+            get => this.Type is PlayerType.Zombie;
+        }
+
         /// <summary>
         /// Player has exfil'd/left the raid.
         /// </summary>
@@ -322,7 +341,7 @@ namespace eft_dma_radar
         public bool HasThermal => _gearManager.HasThermal;
         public bool HasNVG => _gearManager.HasNVG;
 
-        public ActiveWeaponInfo WeaponInfo { get; set; }
+        public GearManager.Gear ItemInHands { get; set; }
         #endregion
 
         #region Constructor
@@ -389,8 +408,32 @@ namespace eft_dma_radar
                 return false;
             }
         }
+    #region Aimbot
+        public bool SetAmmo()
+        {
+            try
+            {
+                //var ammo_template = Memory.ReadPtrChain(this.Base, [Offsets.HandsController.Item, 0x40, 0x198]); //[190] _defAmmoTemplate : EFT.InventoryLogic.AmmoTemplate
+////
+                //if (ammo_template != 0)
+                //{
+                //    this.bullet_speed = Memory.ReadValue<float>(ammo_template + 0x1BC);//EFT.InventoryLogic.AmmoTemplate->InitialSpeed : Single
+                //    this.ballistic_coeff = Memory.ReadValue<float>(ammo_template + 0x1D0);//EFT.InventoryLogic.AmmoTemplate->BallisticCoeficient : Single
+                //    this.bullet_mass = Memory.ReadValue<float>(ammo_template + 0x258);//EFT.InventoryLogic.AmmoTemplate->BulletMassGram : Single
+                //    this.bullet_diam = Memory.ReadValue<float>(ammo_template + 0x25C);//EFT.InventoryLogic.AmmoTemplate->BulletDiameterMilimeters : Single
+                //    this.bullet_velocity = Memory.ReadValue<float>(ammo_template + 0x1BC);//EFT.InventoryLogic.AmmoTemplate->[1BC] InitialSpeed : Single
+                //    
+                //}
+                //Program.Log($"Got Ammo Info '{bullet_speed}' '{ballistic_coeff}' '{bullet_mass}' '{bullet_diam}'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Program.Log($"ERROR getting Player '{this.Name}' Ammo: {ex}");
+                return false;
+            }
+        }
 
-        //paskakoodi
         public void SetRotationFr(Vector2 brainrot)
         {
             if (!this.IsLocalPlayer || !this.IsAlive || this.MovementContext == 0)
@@ -398,21 +441,20 @@ namespace eft_dma_radar
                 return;
 
             }
-            //Console.WriteLine($"{this.MovementContext}");
-            Memory.WriteValue(this.isOfflinePlayer ? this.MovementContext + Offsets.MovementContext.Rotation : this.MovementContext + Offsets.ObservedPlayerMovementContext.Rotation, brainrot);
+            Memory.WriteValue<Vector2>(this.MovementContext + Offsets.MovementContext._Rotation, brainrot);
         }
 
-        //paskakoodi
         public Vector2 GetRotationFr()
         {
             if (!this.IsLocalPlayer || !this.IsAlive || this.MovementContext == 0)
             {
                 return new Vector2();
             }
+
             return Memory.ReadValue<Vector2>(this.isOfflinePlayer ? this.MovementContext + Offsets.MovementContext.Rotation : this.MovementContext + Offsets.ObservedPlayerMovementContext.Rotation);
         }
 
-
+    #endregion
         /// <summary>
         /// Set player rotation (Direction/Pitch)
         /// </summary>
@@ -483,41 +525,31 @@ namespace eft_dma_radar
             }
         }
 
-        public void SetWeaponInfo(string bsgID)
+        public void SetItemInHands(ulong pointer)
         {
-            if (TarkovDevManager.AllItems.TryGetValue(bsgID, out var item))
-            {
-                var weaponName = item.Item.shortName;
-                var ammoType = this._gearManager.GetAmmoTypeFromWeapon(weaponName);
-
-                this.WeaponInfo = new ActiveWeaponInfo
-                {
-                    ID = bsgID,
-                    Name = weaponName,
-                    AmmoType = ammoType
-                };
-            }
+            this.ItemInHands = this.GearManager.GearItems.FirstOrDefault(x => x.Pointer == pointer);
         }
 
         public void CheckForRequiredGear()
         {
-            var found = false;
+            if (this.Gear.Count < 1)
+                return;
 
-            foreach (var gearItem in _gearManager.Gear.Values)
+            var found = false;
+            var loot = Memory.Loot;
+            var requiredQuestItems = QuestManager.RequiredItems;
+
+            foreach (var gearItem in this.Gear)
             {
-                if (QuestManager.RequiredItems.Contains(gearItem.ID))
+                var parentItem = gearItem.Item.ID;
+
+                if (requiredQuestItems.Contains(parentItem) ||
+                    gearItem.Item.Loot.Any(x => requiredQuestItems.Contains(x.ID)) ||
+                    (loot is not null && loot.RequiredFilterItems is not null && (loot.RequiredFilterItems.ContainsKey(parentItem) ||
+                                      gearItem.Item.Loot.Any(x => loot.RequiredFilterItems.ContainsKey(x.ID)))))
                 {
                     found = true;
                     break;
-                }
-
-                foreach (var lootItem in gearItem.Loot)
-                {
-                    if (QuestManager.RequiredItems.Contains(lootItem.ID))
-                    {
-                        found = true;
-                        break;
-                    }
                 }
             }
 
@@ -551,8 +583,16 @@ namespace eft_dma_radar
                     var inFaction = Program.AIFactionManager.IsInFaction(this.Name, out var playerType);
 
                     if (!inFaction && Memory.IsPvEMode)
-                        if (this.Gear.ContainsKey("Dogtag"))
-                            playerType = (this.Gear["Dogtag"].Short == "BEAR" ? PlayerType.BEAR : PlayerType.USEC);
+                    {
+                        var dogtagSlot = this.Gear.FirstOrDefault(x => x.Slot.Key == "Dogtag");
+
+                        if (dogtagSlot.Item is not null)
+                            playerType = (dogtagSlot.Item.Short == "BEAR" ? PlayerType.BEAR : PlayerType.USEC);
+                    }
+                    else if (!inFaction && this.Name.Equals("???", StringComparison.OrdinalIgnoreCase))
+                    {
+                        playerType = PlayerType.Zombie;
+                    }
 
                     return playerType;
                 }
@@ -571,15 +611,21 @@ namespace eft_dma_radar
                 {
                     return PlayerType.Boss;
                 }
-                else if (this.PlayerRole == 49 || this.PlayerRole == 50)
+                else if (this.PlayerRole == 51 || this.PlayerRole == 52)
                 {
-                    return (this.PlayerRole == 49 ? PlayerType.BEAR : PlayerType.USEC);
+                    return (this.PlayerRole == 51 ? PlayerType.BEAR : PlayerType.USEC);
+                }
+                else if (Program.AIFactionManager.IsInFaction(this.Name, out var playerType))
+                {
+                    return playerType;
+                }
+                else if (this.Name == "???")
+                {
+                    return PlayerType.Zombie;
                 }
                 else
                 {
-                    Program.AIFactionManager.IsInFaction(this.Name, out var playerType);
-
-                    return playerType;
+                    return PlayerType.Scav; // default to scav
                 }
             }
         }
@@ -742,11 +788,12 @@ namespace eft_dma_radar
             this.InventorySlots = inventorySlots;
             this._gearManager = new GearManager(this.InventorySlots);
             this.TransformInternal = transformInternal;
-            this._transform = new Transform(this.TransformInternal, true);
             this.PlayerBody = playerBody;
             this.Name = Memory.ReadUnityString(name);
             this.Name = Helpers.TransliterateCyrillic(this.Name);
             this.PlayerSide = playerSide;
+
+            this._transform = new Transform(this.TransformInternal, true);
 
             if (groupID != 0)
             {
@@ -767,7 +814,7 @@ namespace eft_dma_radar
         /// </summary>
         private void SetupBones()
         {
-            var boneMatrix = Memory.ReadPtrChain(this.PlayerBody, [0x28, 0x28, 0x10]);
+            var boneMatrix = Memory.ReadPtrChain(this.PlayerBody, [0x30, 0x30, 0x10]);
 
             foreach (var bone in RequiredBones)
             {
@@ -787,6 +834,9 @@ namespace eft_dma_radar
         {
             if (this.IsHumanHostile)
                 this.RefreshWatchlistStatus();
+
+            if (this.Type == PlayerType.Zombie)
+                this.Name = "Zombie";
         }
 
         public async void RefreshWatchlistStatus()
@@ -822,11 +872,6 @@ namespace eft_dma_radar
                 this.Tag = "";
                 this.Type = this.isOfflinePlayer ? this.GetOfflinePlayerType(false) : this.GetOnlinePlayerType(false);
             }
-        }
-
-        public void RefreshGear()
-        {
-            //this._gearManager.RefreshGear();
         }
 
         /// <summary>
